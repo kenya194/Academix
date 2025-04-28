@@ -1,11 +1,10 @@
-// src/screens/Login.js
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
@@ -15,7 +14,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const Login = ({ navigation }) => {
+const Login = ({ navigation, onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,38 +28,53 @@ const Login = ({ navigation }) => {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = 'Please enter a valid email';
+      console.log("Passed Email")
     }
 
     if (!password) {
       newErrors.password = 'Password is required';
     } else if (password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
+      console.log("Passed Password")
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+
   const handleLogin = async () => {
-    if (!validateForm()) return;
+    const isValid = validateForm();
+
+     // Even if the form is not valid, we proceed with login
+  if (!isValid) {
+    console.log("Validation failed but proceeding with login attempt");
+  }
 
     setLoading(true);
+    console.log("Loading Set")
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+          // Simulate API call (replace with actual API logic in real-world scenario)
+    await new Promise((resolve, reject) => {
+      const success = true;  // Set to false to simulate an error in the API
+      if (success) {
+        setTimeout(resolve, 1500);  // Simulate successful response after 1.5 seconds
+      } else {
+        setTimeout(() => reject(new Error('Simulated login error')), 1500);  // Simulate failure
+      }
+    });
       
-      // Add your actual authentication logic here
-      // For example:
-      // const response = await authService.login(email, password);
-      // if (response.success) {
-      //   navigation.navigate('Dashboard');
-      // } else {
-      //   Alert.alert('Error', response.message);
-      // }
-      
+      // On successful login, call the onLogin function passed from parent
+      onLogin();  // This will update the isLoggedIn state in App.js
+
+      // Navigate to Dashboard screen
       navigation.navigate('Dashboard');
     } catch (error) {
-      Alert.alert('Error', 'Failed to login. Please try again.');
+      // Only alert when an actual error is caught
+      console.error('Login Error:', error);  // Log the error for debugging
+  
+      // Show alert to user for login failure (only happens if there's a genuine error)
+      Alert.alert('Error', error.message || 'Failed to login. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -74,7 +88,7 @@ const Login = ({ navigation }) => {
       >
         <View style={styles.content}>
           <View style={styles.header}>
-            <Ionicons name="school-outline" size={80} color="#4CAF50" />
+            <Ionicons name="school-outline" size={80} color="#3572f1" />
             <Text style={styles.title}>Academix</Text>
             <Text style={styles.subtitle}>Student Portal</Text>
           </View>
@@ -210,7 +224,7 @@ const styles = StyleSheet.create({
   button: {
     width: '100%',
     padding: 15,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#3572f1',
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 10,
@@ -228,7 +242,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   forgotPasswordText: {
-    color: '#4CAF50',
+    color: '#5b8ef9',
     fontSize: 14,
   },
 });

@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-import React from 'react';
+import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { ThemeProvider } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -24,7 +24,13 @@ const theme = {
   },
 };
 
-export default function App() {
+const App = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
+
+  // Function to handle login
+  const handleLogin = () => {
+    setIsLoggedIn(true); 
+  };
   return (
     <ErrorBoundary>
       <SafeAreaProvider>
@@ -35,10 +41,12 @@ export default function App() {
               backgroundColor="#ffffff"
               animated={true}
             />
-            <AppNavigator />
+           <AppNavigator isLoggedIn={isLoggedIn} onLogin={handleLogin} />
           </NavigationContainer>
         </ThemeProvider>
       </SafeAreaProvider>
     </ErrorBoundary>
   );
-}
+};
+
+export default App;

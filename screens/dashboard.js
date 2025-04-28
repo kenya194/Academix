@@ -252,8 +252,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   menuItemContainer: {
-    width: (width - 60) / 3,
-    marginBottom: 20,
+    width: (width - 70) / 3,
+    marginBottom: 10,
   },
   menuItem: {
     alignItems: 'center',

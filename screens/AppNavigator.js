@@ -1,73 +1,84 @@
-// src/navigation/AppNavigator.js
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import Login from './login';
 import Dashboard from './dashboard';
 import Profile from './profilePage';
 import Results from './resultsPage';
 import Fees from './feeStatus';
 import ErrorBoundary from '../components/ErrorBoundary';
+import { View, Text, Button,Dimensions } from 'react-native';
 
+const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
-// Common header options for all screens
-const commonHeaderOptions = {
-  headerStyle: {
-    backgroundColor: '#2196F3',
-    elevation: 0,
-    shadowOpacity: 0,
-  },
-  headerTintColor: '#fff',
-  headerTitleStyle: {
-    fontWeight: 'bold',
-  },
-  headerBackTitleVisible: false,
+// Get screen width for the drawer size
+const screenWidth = Dimensions.get('window').width;
+
+// Placeholder data for accounts
+const accounts = [
+  { id: '1', name: 'Account 1' },
+  { id: '2', name: 'Account 2' },
+  { id: '3', name: 'Account 3' },
+];
+
+// Drawer menu to navigate to account screens
+const DrawerMenu = ({ navigation }) => {
+  return (
+    <View>
+      {accounts.map(account => (
+        <Button
+          key={account.id}
+          title={account.name}
+          onPress={() => navigation.navigate('Account', { account: account })}
+        />
+      ))}
+    </View>
+  );
 };
 
-const AppNavigator = () => {
+const AppNavigator = ({ isLoggedIn, onLogin }) => {
   return (
     <ErrorBoundary>
-      <Stack.Navigator 
-        initialRouteName="Login"
-        screenOptions={commonHeaderOptions}
-      >
-        <Stack.Screen 
-          name="Login" 
-          component={Login} 
-          options={{ 
-            headerShown: false,
-            gestureEnabled: false // Prevent back gesture on login screen
-          }} 
-        />
-        <Stack.Screen 
-          name="Dashboard" 
-          component={Dashboard}
-          options={{
-            title: 'Home',
-            headerLeft: null // Prevent going back to login
-          }}
-        />
-        <Stack.Screen 
-          name="Profile" 
-          component={Profile}
-          options={{
-            title: 'My Profile'
-          }}
-        />
-        <Stack.Screen 
-          name="Results" 
-          component={Results}
-          options={{
-            title: 'Academic Results'
-          }}
-        />
-        <Stack.Screen 
-          name="Fees" 
-          component={Fees}
-          options={{
-            title: 'Fee Status'
-          }}
-        />
+      <Stack.Navigator>
+        {/* Login Screen */}
+        {!isLoggedIn && (
+          <Stack.Screen name="Login">
+          {(props) => <Login {...props} onLogin={onLogin} />}
+        </Stack.Screen>
+        )}
+
+        {/* After Login, Show the Drawer directly */}
+        {isLoggedIn && (
+          <Stack.Screen name="Home" options={{ headerShown: false }}>
+            {() => (
+              <Drawer.Navigator
+                drawerContent={props => <DrawerMenu {...props} />}
+                screenOptions={{
+                  headerShown: true,
+                  drawerStyle: {
+                    width: screenWidth / 3,
+                    backgroundColor: '#fff',
+                    position: 'absolute',
+                    top: 93,
+                  },
+                  contentContainerStyle: {
+                    marginTop: 80, 
+                  },
+                  overlayColor: 'rgba(0, 0, 0, 0.06)', 
+                  gestureEnabled: false, 
+                  drawerType: 'slide'
+                }}
+                drawerType="slide"
+              >
+                <Drawer.Screen name="Dashboard" component={Dashboard} />
+                <Drawer.Screen name="Profile" component={Profile} />
+                <Drawer.Screen name="Results" component={Results} />
+                <Drawer.Screen name="Fees" component={Fees} />
+              </Drawer.Navigator>
+            )}
+          </Stack.Screen>
+        )}
       </Stack.Navigator>
     </ErrorBoundary>
   );
