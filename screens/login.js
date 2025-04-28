@@ -14,6 +14,29 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+// Theme configuration
+const theme = {
+  dark: false,
+  colors: {
+    primary: '#4CAF50',
+    background: '#f5f5f5',
+    card: '#ffffff',
+    text: '#333333',
+    border: '#e0e0e0',
+    notification: '#ff3d00',
+    error: '#f44336',
+    success: '#4CAF50',
+    warning: '#ff9800',
+    info: '#2196f3',
+    coral: '#ff7f50',
+    warmBeige:'#f5f5dc', 
+    green:'#98fb98',
+    softBlue:'#87cefa',
+    lightYellow:'#fffacd', 
+    lightTeal:'#afeeee',
+  },
+};
+
 const Login = ({ navigation, onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -88,14 +111,14 @@ const Login = ({ navigation, onLogin }) => {
       >
         <View style={styles.content}>
           <View style={styles.header}>
-            <Ionicons name="school-outline" size={80} color="#3572f1" />
+            <Ionicons name="school-outline" size={80} color={theme.colors.softBlue} />
             <Text style={styles.title}>Academix</Text>
             <Text style={styles.subtitle}>Student Portal</Text>
           </View>
 
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Ionicons name="mail-outline" size={24} color="#666" />
+              <Ionicons name="mail-outline" size={24} color={theme.colors.warmBeige} />
               <TextInput
                 style={styles.input}
                 placeholder="Email"
@@ -112,7 +135,7 @@ const Login = ({ navigation, onLogin }) => {
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={24} color="#666" />
+              <Ionicons name="lock-closed-outline" size={24} color={theme.colors.warmBeige} />
               <TextInput
                 style={styles.input}
                 placeholder="Password"
@@ -130,7 +153,7 @@ const Login = ({ navigation, onLogin }) => {
                 <Ionicons 
                   name={showPassword ? "eye-off-outline" : "eye-outline"} 
                   size={24} 
-                  color="#666" 
+                  color={theme.colors.warmBeige}  
                 />
               </TouchableOpacity>
               {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
@@ -183,7 +206,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: theme.colors.warmBeige ,
     marginTop: 5,
   },
   form: {
@@ -224,7 +247,7 @@ const styles = StyleSheet.create({
   button: {
     width: '100%',
     padding: 15,
-    backgroundColor: '#3572f1',
+    backgroundColor: theme.colors.softBlue,
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 10,

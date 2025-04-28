@@ -21,6 +21,12 @@ const theme = {
     success: '#4CAF50',
     warning: '#ff9800',
     info: '#2196f3',
+    coral: '#ff7f50',
+    warmBeige:'#f5f5dc', 
+    green:'#98fb98',
+    softBlue:'#87cefa',
+    lightYellow:'#fffacd', 
+    lightTeal:'#afeeee',
   },
 };
 
