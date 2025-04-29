@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,94 +13,112 @@ import {
   Keyboard
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as AuthSession from 'expo-auth-session';
+import theme from '../theme';
 
-// Theme configuration
-const theme = {
-  dark: false,
-  colors: {
-    primary: '#4CAF50',
-    background: '#f5f5f5',
-    card: '#ffffff',
-    text: '#333333',
-    border: '#e0e0e0',
-    notification: '#ff3d00',
-    error: '#f44336',
-    success: '#4CAF50',
-    warning: '#ff9800',
-    info: '#2196f3',
-    coral: '#ff7f50',
-    warmBeige:'#f5f5dc', 
-    green:'#98fb98',
-    softBlue:'#87cefa',
-    lightYellow:'#fffacd', 
-    lightTeal:'#afeeee',
-  },
+import { useAuthRequest, makeRedirectUri } from 'expo-auth-session';
+import * as Random from 'expo-random';
+
+// Keycloak discovery configuration
+const discovery = {
+  authorizationEndpoint: 'https://keycloak.astromyllc.com/realms/ShootingStar/protocol/openid-connect/auth',
+  tokenEndpoint: 'https://keycloak.astromyllc.com/realms/ShootingStar/protocol/openid-connect/token',
+  revocationEndpoint: 'https://keycloak.astromyllc.com/realms/ShootingStar/protocol/openid-connect/revoke',
 };
+
+const clientId = 'mobileClient';
+const redirectUri = makeRedirectUri({
+  useProxy: true,  // Set to true for Expo Go or development environment
+});
 
 const Login = ({ navigation, onLogin }) => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState(''); // we won't use this for now
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+
+  const [request, response, promptAsync] = AuthSession.useAuthRequest(
+    {
+      clientId: 'mobileClient', // <-- Replace with your Keycloak client ID
+      redirectUri: 'academix://oauthredirect', //AuthSession.makeRedirectUri({  native: 'academix://oauthredirect' }),
+      scopes: ['openid', 'profile', 'email'],
+      responseType: 'code',
+      extraParams: {
+        code_challenge_method: 'S256',
+      },
+    },
+    discovery
+  );
+  console.log(AuthSession.makeRedirectUri({ native: 'academix://oauthredirect' }));
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { code } = response.params;
+      console.log('Authorization code received:', code);
+      exchangeCodeForToken(code);
+    }
+  }, [response]);
 
   const validateForm = () => {
     const newErrors = {};
     
     if (!email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Please enter a valid email';
-      console.log("Passed Email")
+      newErrors.email = 'This field is required';
     }
 
+    // Password input will exist but not used directly in Keycloak OAuth flow
     if (!password) {
       newErrors.password = 'Password is required';
     } else if (password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
-      console.log("Passed Password")
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-
-  const handleLogin = async () => {
-    const isValid = validateForm();
-
-     // Even if the form is not valid, we proceed with login
-  if (!isValid) {
-    console.log("Validation failed but proceeding with login attempt");
-  }
-
-    setLoading(true);
-    console.log("Loading Set")
+  const exchangeCodeForToken = async (code) => {
     try {
-          // Simulate API call (replace with actual API logic in real-world scenario)
-    await new Promise((resolve, reject) => {
-      const success = true;  // Set to false to simulate an error in the API
-      if (success) {
-        setTimeout(resolve, 1500);  // Simulate successful response after 1.5 seconds
-      } else {
-        setTimeout(() => reject(new Error('Simulated login error')), 1500);  // Simulate failure
-      }
-    });
-      
-      // On successful login, call the onLogin function passed from parent
-      onLogin();  // This will update the isLoggedIn state in App.js
+      const tokenResponse = await fetch(discovery.tokenEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          client_id: 'your-mobile-client',
+          code,
+          redirect_uri: AuthSession.makeRedirectUri({ useProxy: true }),
+          code_verifier: request.codeVerifier,
+        }).toString(),
+      });
 
-      // Navigate to Dashboard screen
-      navigation.navigate('Dashboard');
+      const data = await tokenResponse.json();
+
+      if (data.access_token) {
+        console.log('Access Token:', data.access_token);
+        onLogin(data.access_token); // You can save it somewhere (SecureStore maybe)
+        navigation.navigate('Dashboard');
+      } else {
+        console.error('Token Error:', data);
+        Alert.alert('Login Failed', 'Unable to retrieve access token.');
+      }
     } catch (error) {
-      // Only alert when an actual error is caught
-      console.error('Login Error:', error);  // Log the error for debugging
-  
-      // Show alert to user for login failure (only happens if there's a genuine error)
-      Alert.alert('Error', error.message || 'Failed to login. Please try again.');
+      console.error('Token Exchange Error:', error);
+      Alert.alert('Error', 'An error occurred during login.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogin = async () => {
+    const isValid = validateForm();
+    if (!isValid) {
+      console.log('Validation failed.');
+      return;
+    }
+    setLoading(true);
+    console.log('Starting OAuth login with Keycloak...');
+    promptAsync();
   };
 
   return (
@@ -121,15 +139,15 @@ const Login = ({ navigation, onLogin }) => {
               <Ionicons name="mail-outline" size={24} color={theme.colors.warmBeige} />
               <TextInput
                 style={styles.input}
-                placeholder="Email"
+                placeholder="Enter phone number"
                 value={email}
                 onChangeText={(text) => {
                   setEmail(text);
                   setErrors({ ...errors, email: null });
                 }}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
+                keyboardType="default"          // ✅ Now normal text
+                autoCapitalize="sentences"      // ✅ Better for general text
+                autoCorrect={true}              // ✅ Optional: autocorrect enabled for text
               />
               {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
             </View>
@@ -162,7 +180,7 @@ const Login = ({ navigation, onLogin }) => {
             <TouchableOpacity 
               style={[styles.button, loading && styles.buttonDisabled]}
               onPress={handleLogin}
-              disabled={loading}
+              disabled={loading || !request}
             >
               {loading ? (
                 <ActivityIndicator color="#fff" />
@@ -206,7 +224,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: theme.colors.warmBeige ,
+    color: theme.colors.warmBeige,
     marginTop: 5,
   },
   form: {

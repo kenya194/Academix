@@ -7,18 +7,24 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "scheme": "academix",
-    "platforms": ["ios", "android", "web"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.academix",
+      "bundleIdentifier": "com.astromyllc.academix",
       "infoPlist": {
         "CFBundleURLTypes": [
           {
-            "CFBundleURLSchemes": ["academix"] 
+            "CFBundleURLSchemes": [
+              "academix"
+            ]
           }
         ]
       }
@@ -27,22 +33,30 @@
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       },
-      "package": "com.yourcompany.academix", 
+      "package": "com.astromyllc.academix",
       "intentFilters": [
         {
           "action": "VIEW",
           "data": [
             {
               "scheme": "academix",
-              "host": "oauthredirect" 
+              "host": "oauthredirect"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "27f28cea-8c7d-4059-b312-150b61f7f1b6"
+      }
     }
   }
 }
