@@ -131,12 +131,12 @@ const Login = ({ navigation, onLogin }) => {
           <View style={styles.header}>
             <Ionicons name="school-outline" size={80} color={theme.colors.softBlue} />
             <Text style={styles.title}>Academix</Text>
-            <Text style={styles.subtitle}>Student Portal</Text>
+            <Text style={styles.subtitle}>Parent Portal</Text>
           </View>
 
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Ionicons name="mail-outline" size={24} color={theme.colors.warmBeige} />
+              <Ionicons name="mail-outline" size={24} color={theme.colors.coral} />
               <TextInput
                 style={styles.input}
                 placeholder="Enter phone number"
@@ -153,7 +153,7 @@ const Login = ({ navigation, onLogin }) => {
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={24} color={theme.colors.warmBeige} />
+              <Ionicons name="lock-closed-outline" size={24} color={theme.colors.coral} />
               <TextInput
                 style={styles.input}
                 placeholder="Password"
@@ -171,7 +171,7 @@ const Login = ({ navigation, onLogin }) => {
                 <Ionicons 
                   name={showPassword ? "eye-off-outline" : "eye-outline"} 
                   size={24} 
-                  color={theme.colors.warmBeige}  
+                  color={theme.colors.coral}  
                 />
               </TouchableOpacity>
               {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
@@ -205,7 +205,7 @@ const Login = ({ navigation, onLogin }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
@@ -224,11 +224,11 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: theme.colors.warmBeige,
+    color: theme.colors.coral,
     marginTop: 5,
   },
   form: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.card,
     padding: 20,
     borderRadius: 15,
     elevation: 3,
@@ -242,10 +242,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 15,
     padding: 12,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: theme.colors.background,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#eee',
+    borderColor: theme.colors.border,
   },
   input: {
     flex: 1,
