@@ -1,4 +1,3 @@
-// src/screens/Dashboard.js
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -14,124 +13,23 @@ import {
   Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-
-const { width } = Dimensions.get("window");
-
-const Dashboard = ({ navigation }) => {
-  const [student, setStudent] = useState(null);
-  const [loading, setLoading] = useState(true);
+const StudentCard = ({ student, navigation, menuItems, fadeAnim }) => {
   const [imageError, setImageError] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const fadeAnim = useState(new Animated.Value(0))[0];
 
-  const fetchStudentData = async () => {
-    try {
-      // Simulated API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStudent({
-        name: "John Doe",
-        picture: "https://via.placeholder.com/150",
-        studentId: "STU2024001",
-        course: "Computer Science",
-        semester: "3rd Semester",
-      });
-    } catch (error) {
-      Alert.alert("Error", "Failed to load student data");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+  const handleImageError = () => setImageError(true);
+
+  const handleMenuItemPress = (screen) => {
+    navigation.dispatch(DrawerActions.closeDrawer());
+    navigation.navigate(screen, { studentId: student.id });
   };
-
-  useEffect(() => {
-    fetchStudentData();
-  }, []);
-
-  useEffect(() => {
-    if (!loading) {
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [loading]);
-
-  const onRefresh = React.useCallback(() => {
-    setRefreshing(true);
-    fetchStudentData();
-  }, []);
-
-  const handleImageError = () => {
-    setImageError(true);
-  };
-
-  const menuItems = [
-    {
-      id: "profile",
-      icon: "person-outline",
-      label: "Profile",
-      screen: "Profile",
-      color: "#4CAF50",
-    },
-    {
-      id: "results",
-      icon: "book-outline",
-      label: "Results",
-      screen: "Results",
-      color: "#2196F3",
-    },
-    {
-      id: "fees",
-      icon: "wallet-outline",
-      label: "Fees Status",
-      screen: "Fees",
-      color: "#FF9800",
-    },
-    {
-      id: "attendance",
-      icon: "calendar-outline",
-      label: "Attendance",
-      screen: "Attendance",
-      color: "#9C27B0",
-    },
-    {
-      id: "assignments",
-      icon: "document-text-outline",
-      label: "Assignments",
-      screen: "Assignments",
-      color: "#F44336",
-    },
-    {
-      id: "notifications",
-      icon: "notifications-outline",
-      label: "Notifications",
-      screen: "Notifications",
-      color: "#607D8B",
-    },
-  ];
-
-  if (loading && !refreshing) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4CAF50" />
-        <Text style={styles.loadingText}>Loading...</Text>
-      </View>
-    );
-  }
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          colors={["#4CAF50"]}
-        />
-      }
-    >
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+    <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+      <TouchableOpacity
+        style={styles.menuItem}
+        onPress={() => handleMenuItemPress(item.screen)}
+        activeOpacity={0.7}
+      >
         <View style={styles.header}>
           <View style={styles.imageContainer}>
             {imageError ? (
@@ -195,8 +93,8 @@ const Dashboard = ({ navigation }) => {
             </Animated.View>
           ))}
         </View>
-      </Animated.View>
-    </ScrollView>
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 
@@ -301,4 +199,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Dashboard;
+export default StudentCard;

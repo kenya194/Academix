@@ -40,15 +40,22 @@ const Login = ({ navigation, onLogin }) => {
 
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
     {
-      clientId: 'mobileClient', // <-- Replace with your Keycloak client ID
-      redirectUri: 'academix://oauthredirect', //AuthSession.makeRedirectUri({  native: 'academix://oauthredirect' }),
+      clientId: 'mobileClient',
+      redirectUri: AuthSession.makeRedirectUri({
+        native: 'academix://oauthredirect',
+        useProxy: true // Auto-corrects URI format
+      }),
       scopes: ['openid', 'profile', 'email'],
       responseType: 'code',
-      extraParams: {
-        code_challenge_method: 'S256',
-      },
     },
     discovery
+  );
+  
+  console.log("Using redirect URI:", 
+    AuthSession.makeRedirectUri({
+      native: 'academix://oauthredirect',
+      useProxy: true
+    })
   );
   console.log(AuthSession.makeRedirectUri({ native: 'academix://oauthredirect' }));
 
@@ -57,6 +64,12 @@ const Login = ({ navigation, onLogin }) => {
       const { code } = response.params;
       console.log('Authorization code received:', code);
       exchangeCodeForToken(code);
+    }
+  }, [response]);
+
+  useEffect(() => {
+    if (response?.type === 'error') {
+      console.log('Full error details:', response.params);
     }
   }, [response]);
 
@@ -85,7 +98,7 @@ const Login = ({ navigation, onLogin }) => {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
           grant_type: 'authorization_code',
-          client_id: 'your-mobile-client',
+          client_id: 'mobileClient',
           code,
           redirect_uri: AuthSession.makeRedirectUri({ useProxy: true }),
           code_verifier: request.codeVerifier,

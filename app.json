@@ -18,6 +18,7 @@
     },
     "ios": {
       "supportsTablet": true,
+      "jsEngine": "jsc",
       "bundleIdentifier": "com.astromyllc.academix",
       "infoPlist": {
         "CFBundleURLTypes": [
@@ -57,6 +58,9 @@
       "eas": {
         "projectId": "27f28cea-8c7d-4059-b312-150b61f7f1b6"
       }
-    }
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
   }
 }
