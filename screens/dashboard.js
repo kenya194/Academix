@@ -1,5 +1,3 @@
-// src/screens/Dashboard.js
-import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -15,14 +13,18 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
+import React, { useState, useEffect } from "react";
 const { width } = Dimensions.get("window");
 
-const Dashboard = ({ navigation }) => {
+
+const Dashboard = ({ navigation, selectedStudent }) => {
+  
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
+  
 
   const fetchStudentData = async () => {
     try {
@@ -44,8 +46,12 @@ const Dashboard = ({ navigation }) => {
   };
 
   useEffect(() => {
-    fetchStudentData();
-  }, []);
+    if (selectedStudent) {
+      fetchStudentData();
+      // Fetch or display data for selectedStudent.id
+    }
+  }, [selectedStudent]);
+  
 
   useEffect(() => {
     if (!loading) {
@@ -66,6 +72,16 @@ const Dashboard = ({ navigation }) => {
     setImageError(true);
   };
 
+
+  const modules = [
+    { screen: 'Profile', icon: "person", label: "Profile" },
+    { screen: 'Results', icon: "document-text", label: "Results" },
+    { screen: 'Fees', icon: "wallet", label: "Fees" },
+    { screen: 'Settings', icon: "settings", label: "Settings" },
+    { screen: 'Notification', icon: "notifications", label: "Notifications" },
+    { screen: 'About', icon: "information-circle", label: "About" },
+  ];
+  
   const menuItems = [
     {
       id: "profile",

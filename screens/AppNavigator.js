@@ -1,130 +1,200 @@
-import React from "react";
-import { createStackNavigator } from "@react-navigation/stack";
-import {
-  createDrawerNavigator,
-  DrawerItemList,
-} from "@react-navigation/drawer";
-import Login from "./login";
+import React, { useState, useEffect, useContext } from "react";
+import { Dimensions, StyleSheet, TouchableOpacity } from "react-native";
+import { createDrawerNavigator } from "@react-navigation/drawer";
 import Dashboard from "./dashboard";
 import Profile from "./profilePage";
 import Results from "./resultsPage";
 import Fees from "./feeStatus";
+import Login from "./login";
 import StudentAccountList from "./StudentAccountList";
-import ErrorBoundary from "../components/ErrorBoundary";
-import {
-  View,
-  Text,
-  Button,
-  Dimensions,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { AuthContext } from "../AuthContext";
 
 const Drawer = createDrawerNavigator();
-const Stack = createStackNavigator();
-const screenWidth = Dimensions.get("window").width;
+const { width } = Dimensions.get("window");
 
-// Custom Drawer Content
-const CustomDrawerContent = (props) => {
+const AppNavigator = () => {
+  const { isLoggedIn, onLogin, onLogout } = useContext(AuthContext);
+
+  console.log("NOW IN THE APP NAVIGATOR FILE  -" + isLoggedIn);
+  const [students, setStudents] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+
+  useEffect(() => {
+    // Replace this with a real API fetch
+    const fetchedStudents = [
+      {
+        id: "1",
+        name: "John Doe",
+        studentId: "S001",
+        course: "Computer Science",
+        semester: "Fall 2023",
+        picture: "https://example.com/student1.jpg",
+      },
+      {
+        id: "2",
+        name: "Jane Doe",
+        studentId: "S002",
+        course: "Mathematics",
+        semester: "Spring 2024",
+        picture: "https://example.com/student2.jpg",
+      },
+      {
+        id: "3",
+        name: "Jim Beam",
+        studentId: "S003",
+        course: "Physics",
+        semester: "Fall 2023",
+        picture: "https://example.com/student3.jpg",
+      },
+    ];
+    setStudents(fetchedStudents);
+    setSelectedStudent(fetchedStudents[0]); // Select the first student by default
+  }, []);
+
+  const peopleItems = [
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      screen: "Dashboard",
+      icon: "home",
+      color: "#4CAF50",
+    },
+    {
+      id: "profile",
+      label: "Profile",
+      screen: "Profile",
+      icon: "person",
+      color: "#2196F3",
+    },
+    {
+      id: "results",
+      label: "Results",
+      screen: "Results",
+      icon: "stats-chart",
+      color: "#FF9800",
+    },
+    {
+      id: "fees",
+      label: "Fees",
+      screen: "Fees",
+      icon: "cash",
+      color: "#9C27B0",
+    },
+  ];
+
+  if (!isLoggedIn) {
+      console.log("Login component is:", Login);
+    return (
+      <Drawer.Navigator
+        screenOptions={{ headerShown: false }}
+        drawerContent={() => null}
+      >
+        <Drawer.Screen name="Login">
+          {(props) => <Login {...props} onLogin={onLogin} />}
+        </Drawer.Screen>
+      </Drawer.Navigator>
+    );
+  }
+
   return (
-    <View style={styles.drawerContainer}>
-      <View style={styles.drawerHeader}>
-        <Text style={styles.drawerTitle}>Academix Portal</Text>
-      </View>
-      <DrawerItemList {...props} />
+    <Drawer.Navigator
+      drawerContent={(drawerProps) => (
+        <StudentAccountList
+          students={students}
+          navigation={drawerProps.navigation}
+          peopleItems={peopleItems}
+          onSelectStudent={(student) => {
+            setSelectedStudent(student);
+            drawerProps.navigation.closeDrawer();
+          }}
+          onLogout={onLogout}
+        />
+      )}
+      screenOptions={({ navigation }) => ({
+        headerShown: true,
+        headerStyle: { height: 80 }, // custom header height
+        drawerStyle: {
+          width: Math.max(width * 0.35, 20),
+          paddingTop: 80,
+          backgroundColor: "#fff",
+        },
+        overlayColor: "#ffffff29",
+        gestureEnabled: true,
+        headerLeft: () => (
+          <TouchableOpacity
+            onPress={() => navigation.toggleDrawer()}
+            style={{ marginLeft: 15 }}
+          >
+            <Ionicons name="people" size={28} color="#4CAF50" />
+          </TouchableOpacity>
+        ),
+      })}
+    >
+      <Drawer.Screen
+        name="Dashboard"
+        options={({ navigation }) => ({
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.toggleDrawer()}
+              style={{ marginLeft: 15 }}
+            >
+              <Ionicons name="people" size={28} color="#4CAF50" />
+            </TouchableOpacity>
+          ),
+        })}
+      >
+        {(props) => <Dashboard {...props} selectedStudent={selectedStudent} />}
+      </Drawer.Screen>
 
-      {/* Additional drawer items if needed */}
-      <View style={styles.drawerFooter}>
-        <Text style={styles.drawerFooterText}>v1.0.0</Text>
-      </View>
-    </View>
-  );
-};
+      <Drawer.Screen
+        name="Profile"
+        options={({ navigation }) => ({
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.toggleDrawer()}
+              style={{ marginLeft: 15 }}
+            >
+              <Ionicons name="people" size={28} color="#4CAF50" />
+            </TouchableOpacity>
+          ),
+        })}
+      >
+        {(props) => <Profile {...props} selectedStudent={selectedStudent} />}
+      </Drawer.Screen>
 
-const AppNavigator = ({ isLoggedIn, onLogin }) => {
-  return (
-    <ErrorBoundary>
-      <Stack.Navigator>
-        {!isLoggedIn ? (
-          <Stack.Screen name="Login">
-            {(props) => <Login {...props} onLogin={onLogin} />}
-          </Stack.Screen>
-        ) : (
-          <Stack.Screen name="Home" options={{ headerShown: false }}>
-            {() => (
-              <Drawer.Navigator
-                drawerContent={(props) => <CustomDrawerContent {...props} />}
-                screenOptions={{
-                  headerShown: true,
-                  drawerStyle: {
-                    width: screenWidth * 0.7,
-                    backgroundColor: "#fff",
-                  },
-                  overlayColor: "rgba(0, 0, 0, 0.2)",
-                  gestureEnabled: true,
-                  headerLeft: () => (
-                    <TouchableOpacity
-                      onPress={() => props.navigation.toggleDrawer()}
-                      style={{ marginLeft: 15 }}
-                    >
-                      <Ionicons name="menu" size={28} color="#4CAF50" />
-                    </TouchableOpacity>
-                  ),
-                }}
-              >
-                <Drawer.Screen
-                  name="Students"
-                  component={StudentAccountList}
-                  options={{
-                    title: "Student Dashboard",
-                    drawerIcon: ({ color }) => (
-                      <Ionicons name="people" size={24} color={color} />
-                    ),
-                  }}
-                />
-                <Drawer.Screen
-                  name="Dashboard"
-                  component={Dashboard}
-                  options={{
-                    drawerIcon: ({ color }) => (
-                      <Ionicons name="home" size={24} color={color} />
-                    ),
-                  }}
-                />
-                <Drawer.Screen
-                  name="Profile"
-                  component={Profile}
-                  options={{
-                    drawerIcon: ({ color }) => (
-                      <Ionicons name="person" size={24} color={color} />
-                    ),
-                  }}
-                />
-                <Drawer.Screen
-                  name="Results"
-                  component={Results}
-                  options={{
-                    drawerIcon: ({ color }) => (
-                      <Ionicons name="document-text" size={24} color={color} />
-                    ),
-                  }}
-                />
-                <Drawer.Screen
-                  name="Fees"
-                  component={Fees}
-                  options={{
-                    drawerIcon: ({ color }) => (
-                      <Ionicons name="wallet" size={24} color={color} />
-                    ),
-                  }}
-                />
-              </Drawer.Navigator>
-            )}
-          </Stack.Screen>
-        )}
-      </Stack.Navigator>
-    </ErrorBoundary>
+      <Drawer.Screen
+        name="Results"
+        options={({ navigation }) => ({
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.toggleDrawer()}
+              style={{ marginLeft: 15 }}
+            >
+              <Ionicons name="people" size={28} color="#4CAF50" />
+            </TouchableOpacity>
+          ),
+        })}
+      >
+        {(props) => <Results {...props} selectedStudent={selectedStudent} />}
+      </Drawer.Screen>
+
+      <Drawer.Screen
+        name="Fees"
+        options={({ navigation }) => ({
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.toggleDrawer()}
+              style={{ marginLeft: 15 }}
+            >
+              <Ionicons name="people" size={28} color="#4CAF50" />
+            </TouchableOpacity>
+          ),
+        })}
+      >
+        {(props) => <Fees {...props} selectedStudent={selectedStudent} />}
+      </Drawer.Screen>
+    </Drawer.Navigator>
   );
 };
 

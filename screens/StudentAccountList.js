@@ -1,39 +1,18 @@
-import React, { useRef } from "react";
-import { FlatList, Animated } from "react-native";
-import StudentCard from "./StudentCard";
+import React, { useRef, useEffect } from 'react';
+import { View, FlatList, Animated, TouchableOpacity, StyleSheet,Text,Alert } from 'react-native';
+import StudentCard from './StudentCard';
+import { Ionicons } from '@expo/vector-icons';
 
-const StudentAccountList = ({ students, navigation, menuItems }) => {
+const StudentAccountList = ({ 
+  students, 
+  navigation, 
+  menuItems, 
+  onSelectStudent,
+  onLogout // Add this prop
+}) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const students = [
-    {
-      id: '1',
-      name: 'John Doe',
-      studentId: 'S001',
-      course: 'Computer Science',
-      semester: 'Fall 2023',
-      picture: 'https://example.com/student1.jpg'
-    },
-    {
-      id: '2',
-      name: 'John Doe',
-      studentId: 'S001',
-      course: 'Computer Science',
-      semester: 'Fall 2023',
-      picture: 'https://example.com/student1.jpg'
-    },
-    {
-      id: '3',
-      name: 'John Doe',
-      studentId: 'S001',
-      course: 'Computer Science',
-      semester: 'Fall 2023',
-      picture: 'https://example.com/student1.jpg'
-    },
-    // More students...
-  ];
-
-  React.useEffect(() => {
+  useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 500,
@@ -41,34 +20,70 @@ const StudentAccountList = ({ students, navigation, menuItems }) => {
     }).start();
   }, []);
 
-  React.useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => navigation.openDrawer()}>
-          <Ionicons name="menu" size={24} style={{ marginLeft: 15 }} />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
-
   const renderItem = ({ item }) => (
-    <StudentCard
-      student={item}
-      navigation={navigation}
-      menuItems={menuItems}
-      fadeAnim={fadeAnim}
-    />
+    <TouchableOpacity onPress={() => onSelectStudent(item)}>
+      <StudentCard
+        student={item}
+        navigation={navigation}
+        menuItems={menuItems}
+        fadeAnim={fadeAnim}
+      />
+    </TouchableOpacity>
   );
 
   return (
-    <FlatList
-      data={students}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id}
-      contentContainerStyle={{ paddingBottom: 20 }}
-      showsVerticalScrollIndicator={false}
-    />
+    <View style={styles.container}>
+      <FlatList
+        data={students}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        showsVerticalScrollIndicator={false}
+      />
+      
+      {/* Add Logout Button at Bottom */}
+      <Animated.View style={{ opacity: fadeAnim }}>
+        <TouchableOpacity 
+          onPress={() => {
+            Alert.alert(
+              "Logout",
+              "Are you sure you want to logout?",
+              [
+                { text: "Cancel", style: "cancel" },
+                { text: "Logout", onPress: onLogout }
+              ]
+            );
+          }}
+          style={styles.logoutButton}
+        >
+          <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      </Animated.View>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 20,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    marginHorizontal: 15,
+    marginBottom: 20,
+    borderRadius: 10,
+    backgroundColor: '#FF3B3010', // Slight red background
+  },
+  logoutText: {
+    color: '#FF3B30',
+    marginLeft: 10,
+    fontSize: 16,
+    fontWeight: '500',
+  },
+});
 
 export default StudentAccountList;

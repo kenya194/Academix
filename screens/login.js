@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -10,146 +10,179 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
-  Keyboard
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import * as AuthSession from 'expo-auth-session';
-import theme from '../theme';
+  Keyboard,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useAuthRequest, makeRedirectUri } from "expo-auth-session";
+import * as SecureStore from "expo-secure-store";
+import { CommonActions } from "@react-navigation/native";
+import theme from "../theme";
+import { AuthContext } from "../AuthContext";
 
-import { useAuthRequest, makeRedirectUri } from 'expo-auth-session';
-import * as Random from 'expo-random';
-
-// Keycloak discovery configuration
-const discovery = {
-  authorizationEndpoint: 'https://keycloak.astromyllc.com/realms/ShootingStar/protocol/openid-connect/auth',
-  tokenEndpoint: 'https://keycloak.astromyllc.com/realms/ShootingStar/protocol/openid-connect/token',
-  revocationEndpoint: 'https://keycloak.astromyllc.com/realms/ShootingStar/protocol/openid-connect/revoke',
+// Keycloak configuration
+const keycloakConfig = {
+  issuer: "https://keycloak.astromyllc.com/realms/ShootingStar",
+  clientId: "mobileClient",
+  scopes: ["openid", "profile", "email"],
 };
 
-const clientId = 'mobileClient';
-const redirectUri = makeRedirectUri({
-  useProxy: true,  // Set to true for Expo Go or development environment
-});
+const discovery = {
+  authorizationEndpoint: `${keycloakConfig.issuer}/protocol/openid-connect/auth`,
+  tokenEndpoint: `${keycloakConfig.issuer}/protocol/openid-connect/token`,
+  revocationEndpoint: `${keycloakConfig.issuer}/protocol/openid-connect/revoke`,
+};
 
-const Login = ({ navigation, onLogin }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState(''); // we won't use this for now
+const Login = ({ navigation }) => {
+  const { onLogin } = useContext(AuthContext);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const [request, response, promptAsync] = AuthSession.useAuthRequest(
+  const redirectUri = makeRedirectUri({
+    native: "academix://oauthredirect",
+    useProxy: __DEV__, // Only use proxy in development
+  });
+
+  const [request, response, promptAsync] = useAuthRequest(
     {
-      clientId: 'mobileClient',
-      redirectUri: AuthSession.makeRedirectUri({
-        native: 'academix://oauthredirect',
-        useProxy: true // Auto-corrects URI format
-      }),
-      scopes: ['openid', 'profile', 'email'],
-      responseType: 'code',
+      clientId: keycloakConfig.clientId,
+      redirectUri,
+      scopes: keycloakConfig.scopes,
+      responseType: "code",
     },
     discovery
   );
-  
-  console.log("Using redirect URI:", 
-    AuthSession.makeRedirectUri({
-      native: 'academix://oauthredirect',
-      useProxy: true
-    })
-  );
-  console.log(AuthSession.makeRedirectUri({ native: 'academix://oauthredirect' }));
 
+  // Debug redirect URI
   useEffect(() => {
-    if (response?.type === 'success') {
+    console.log("Calculated Redirect URI:", redirectUri);
+  }, []);
+
+  // Handle OAuth response
+  useEffect(() => {
+    if (response?.type === "success") {
       const { code } = response.params;
-      console.log('Authorization code received:', code);
+      console.log("Authorization code received, exchanging for token...");
       exchangeCodeForToken(code);
+    } else if (response?.type === "error") {
+      console.error("OAuth Error:", response.error);
+      Alert.alert(
+        "Login Error",
+        response.error_description || "Authentication failed"
+      );
+      setLoading(false);
     }
   }, [response]);
-
-  useEffect(() => {
-    if (response?.type === 'error') {
-      console.log('Full error details:', response.params);
-    }
-  }, [response]);
-
-  const validateForm = () => {
-    const newErrors = {};
-    
-    if (!email) {
-      newErrors.email = 'This field is required';
-    }
-
-    // Password input will exist but not used directly in Keycloak OAuth flow
-    if (!password) {
-      newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
 
   const exchangeCodeForToken = async (code) => {
     try {
+      console.log("Starting token exchange...");
+
+      // Create URL-encoded form data
+      const formData = new URLSearchParams();
+      formData.append("grant_type", "authorization_code");
+      formData.append("client_id", keycloakConfig.clientId);
+      formData.append("code", code);
+      formData.append("redirect_uri", redirectUri);
+      formData.append("code_verifier", request?.codeVerifier || "");
+
+      // For confidential clients (if needed)
+      // formData.append('client_secret', 'your-client-secret');
+
+      console.log("Token request body:", formData.toString());
+
       const tokenResponse = await fetch(discovery.tokenEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          grant_type: 'authorization_code',
-          client_id: 'mobileClient',
-          code,
-          redirect_uri: AuthSession.makeRedirectUri({ useProxy: true }),
-          code_verifier: request.codeVerifier,
-        }).toString(),
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Accept: "application/json",
+        },
+        body: formData.toString(), // Convert to string
       });
 
-      const data = await tokenResponse.json();
-
-      if (data.access_token) {
-        console.log('Access Token:', data.access_token);
-        onLogin(data.access_token); // You can save it somewhere (SecureStore maybe)
-        navigation.navigate('Dashboard');
-      } else {
-        console.error('Token Error:', data);
-        Alert.alert('Login Failed', 'Unable to retrieve access token.');
+      if (!tokenResponse.ok) {
+        const errorData = await tokenResponse.json();
+        console.error("Token exchange failed:", errorData);
+        throw new Error(errorData.error_description || "Token exchange failed");
       }
+
+      const data = await tokenResponse.json();
+      console.log("Token exchange successful:", data);
+
+      // Store tokens
+      await SecureStore.setItemAsync("auth_token", data.access_token);
+      await SecureStore.setItemAsync("refresh_token", data.refresh_token);
+
+      // Verify storage
+      const storedToken = await SecureStore.getItemAsync("auth_token");
+      console.log("Stored token:", storedToken ? "✅ Success" : "❌ Failed");
+      if (!storedToken) throw new Error("Token storage failed");
+
+      // Reset loading state first
+      setLoading(false);
+
+      // Handle successful login
+      if (onLogin) {
+        console.log("Calling onLogin callback");
+        onLogin(data.access_token);
+      }
+
+  
     } catch (error) {
-      console.error('Token Exchange Error:', error);
-      Alert.alert('Error', 'An error occurred during login.');
-    } finally {
+      console.error("Full token exchange error:", error);
+      Alert.alert(
+        "Login Failed",
+        error.message.includes("grant_type")
+          ? "Authentication configuration error"
+          : error.message
+      );
       setLoading(false);
     }
   };
 
-  const handleLogin = async () => {
-    const isValid = validateForm();
-    if (!isValid) {
-      console.log('Validation failed.');
-      return;
-    }
+  const handleLogin = () => {
+    if (!validateForm()) return;
     setLoading(true);
-    console.log('Starting OAuth login with Keycloak...');
-    promptAsync();
+    promptAsync().catch((error) => {
+      console.error("Prompt Error:", error);
+      setLoading(false);
+    });
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!email.trim()) newErrors.email = "Email is required";
+    if (!password) newErrors.password = "Password is required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
         <View style={styles.content}>
           <View style={styles.header}>
-            <Ionicons name="school-outline" size={80} color={theme.colors.softBlue} />
+            <Ionicons
+              name="school-outline"
+              size={80}
+              color={theme.colors.softBlue}
+            />
             <Text style={styles.title}>Academix</Text>
             <Text style={styles.subtitle}>Parent Portal</Text>
           </View>
 
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Ionicons name="mail-outline" size={24} color={theme.colors.coral} />
+              <Ionicons
+                name="mail-outline"
+                size={24}
+                color={theme.colors.coral}
+              />
               <TextInput
                 style={styles.input}
                 placeholder="Enter phone number"
@@ -158,15 +191,21 @@ const Login = ({ navigation, onLogin }) => {
                   setEmail(text);
                   setErrors({ ...errors, email: null });
                 }}
-                keyboardType="default"          // ✅ Now normal text
-                autoCapitalize="sentences"      // ✅ Better for general text
-                autoCorrect={true}              // ✅ Optional: autocorrect enabled for text
+                keyboardType="default"
+                autoCapitalize="none"
+                autoCorrect={false}
               />
-              {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+              {errors.email && (
+                <Text style={styles.errorText}>{errors.email}</Text>
+              )}
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={24} color={theme.colors.coral} />
+              <Ionicons
+                name="lock-closed-outline"
+                size={24}
+                color={theme.colors.coral}
+              />
               <TextInput
                 style={styles.input}
                 placeholder="Password"
@@ -177,20 +216,22 @@ const Login = ({ navigation, onLogin }) => {
                 }}
                 secureTextEntry={!showPassword}
               />
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setShowPassword(!showPassword)}
                 style={styles.eyeIcon}
               >
-                <Ionicons 
-                  name={showPassword ? "eye-off-outline" : "eye-outline"} 
-                  size={24} 
-                  color={theme.colors.coral}  
+                <Ionicons
+                  name={showPassword ? "eye-off-outline" : "eye-outline"}
+                  size={24}
+                  color={theme.colors.coral}
                 />
               </TouchableOpacity>
-              {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+              {errors.password && (
+                <Text style={styles.errorText}>{errors.password}</Text>
+              )}
             </View>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.button, loading && styles.buttonDisabled]}
               onPress={handleLogin}
               disabled={loading || !request}
@@ -202,9 +243,14 @@ const Login = ({ navigation, onLogin }) => {
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.forgotPassword}
-              onPress={() => Alert.alert('Forgot Password', 'Please contact your administrator')}
+              onPress={() =>
+                Alert.alert(
+                  "Forgot Password",
+                  "Please contact your administrator"
+                )
+              }
             >
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
@@ -222,17 +268,17 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 20,
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 40,
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginTop: 10,
   },
   subtitle: {
@@ -245,14 +291,14 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 15,
     elevation: 3,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 15,
     padding: 12,
     backgroundColor: theme.colors.background,
@@ -264,39 +310,39 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   eyeIcon: {
     padding: 5,
   },
   errorText: {
-    color: '#F44336',
+    color: "#F44336",
     fontSize: 12,
     marginTop: 5,
     marginLeft: 34,
   },
   button: {
-    width: '100%',
+    width: "100%",
     padding: 15,
     backgroundColor: theme.colors.softBlue,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 10,
   },
   buttonDisabled: {
     opacity: 0.7,
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   forgotPassword: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 15,
   },
   forgotPasswordText: {
-    color: '#5b8ef9',
+    color: "#5b8ef9",
     fontSize: 14,
   },
 });

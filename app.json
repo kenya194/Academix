@@ -2,38 +2,27 @@
   "expo": {
     "name": "Academix",
     "slug": "Academix",
+    "entryPoint": "./App.js",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "scheme": "academix",
-    "platforms": [
-      "ios",
-      "android",
-      "web"
-    ],
-    "splash": {
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
+    "jsEngine": "jsc",
+    "assetBundlePatterns": ["**/*"],
+    "platforms": ["ios", "android", "web"],
     "ios": {
       "supportsTablet": true,
-      "jsEngine": "jsc",
+      "jsEngine": "hermes",
       "bundleIdentifier": "com.astromyllc.academix",
       "infoPlist": {
         "CFBundleURLTypes": [
           {
-            "CFBundleURLSchemes": [
-              "academix"
-            ]
+            "CFBundleURLSchemes": ["academix"]
           }
         ]
       }
     },
     "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#ffffff"
-      },
       "package": "com.astromyllc.academix",
       "intentFilters": [
         {
@@ -44,23 +33,24 @@
               "host": "oauthredirect"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
-      ]
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "27f28cea-8c7d-4059-b312-150b61f7f1b6"
-      }
+      ],
+      "permissions": ["android.permission.INTERNET"]
     },
     "plugins": [
-      "expo-secure-store"
-    ]
+      "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ],
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    }
   }
 }
