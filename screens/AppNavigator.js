@@ -9,6 +9,7 @@ import Login from "./login";
 import StudentAccountList from "./StudentAccountList";
 import { Ionicons } from "@expo/vector-icons";
 import { AuthContext } from "../AuthContext";
+import { makePostCall } from '../apiService';
 
 const Drawer = createDrawerNavigator();
 const { width } = Dimensions.get("window");
@@ -20,36 +21,37 @@ const AppNavigator = () => {
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
-  useEffect(() => {
-    // Replace this with a real API fetch
-    const fetchedStudents = [
-      {
-        id: "1",
-        name: "John Doe",
-        studentId: "S001",
-        course: "Computer Science",
-        semester: "Fall 2023",
-        picture: "https://example.com/student1.jpg",
-      },
-      {
-        id: "2",
-        name: "Jane Doe",
-        studentId: "S002",
-        course: "Mathematics",
-        semester: "Spring 2024",
-        picture: "https://example.com/student2.jpg",
-      },
-      {
-        id: "3",
-        name: "Jim Beam",
-        studentId: "S003",
-        course: "Physics",
-        semester: "Fall 2023",
-        picture: "https://example.com/student3.jpg",
-      },
-    ];
-    setStudents(fetchedStudents);
-    setSelectedStudent(fetchedStudents[0]); // Select the first student by default
+  
+
+useEffect(() => {
+    const postData = async () => {
+      try {
+        const payload = { val: "0559442369" };
+        const result = await makePostCall('api/mobile/getSkimpStudentsByParentContact', payload);
+
+        console.log('Raw API result:', result);
+
+        const formatted = result.map((student, index) => ({
+          id: (index + 1).toString(),
+          name: `${student.firstName} ${student.otherName} ${student.lastName}`.trim(),
+          studentId: student.studentId,
+          course: student.studentClass || "Unknown",
+          semester: student.dateOfAdmission || "N/A",
+          picture: student.picture && student.picture.trim() !== ""
+            ? student.picture
+            : "https://example.com/default-picture.jpg",
+        }));
+
+        setStudents(formatted);
+        setSelectedStudent(formatted[0]);
+
+        console.log('Formatted result:', formatted);
+      } catch (err) {
+        console.error('Post call failed:', err);
+      }
+    };
+
+    postData();
   }, []);
 
   const peopleItems = [

@@ -77,86 +77,62 @@ const Login = ({ navigation }) => {
   }, [response]);
 
   const exchangeCodeForToken = async (code) => {
-    try {
-      console.log("Starting token exchange...");
+  try {
+    console.log("Starting token exchange...");
 
-      // Create URL-encoded form data
-      const formData = new URLSearchParams();
-      formData.append("grant_type", "authorization_code");
-      formData.append("client_id", keycloakConfig.clientId);
-      formData.append("code", code);
-      formData.append("redirect_uri", redirectUri);
-      formData.append("code_verifier", request?.codeVerifier || "");
+    const formData = new URLSearchParams();
+    formData.append("grant_type", "authorization_code");
+    formData.append("client_id", keycloakConfig.clientId);
+    formData.append("code", code);
+    formData.append("redirect_uri", redirectUri);
+    formData.append("code_verifier", request?.codeVerifier || "");
 
-      // For confidential clients (if needed)
-      // formData.append('client_secret', 'your-client-secret');
+    const tokenResponse = await fetch(discovery.tokenEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "application/json",
+      },
+      body: formData.toString(),
+    });
 
-      console.log("Token request body:", formData.toString());
-
-      const tokenResponse = await fetch(discovery.tokenEndpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Accept: "application/json",
-        },
-        body: formData.toString(), // Convert to string
-      });
-
-      if (!tokenResponse.ok) {
-        const errorData = await tokenResponse.json();
-        console.error("Token exchange failed:", errorData);
-        throw new Error(errorData.error_description || "Token exchange failed");
-      }
-
-      const data = await tokenResponse.json();
-      console.log("Token exchange successful:", data);
-
-      // Store tokens
-      await SecureStore.setItemAsync("auth_token", data.access_token);
-      await SecureStore.setItemAsync("refresh_token", data.refresh_token);
-
-      // Verify storage
-      const storedToken = await SecureStore.getItemAsync("auth_token");
-      console.log("Stored token:", storedToken ? "✅ Success" : "❌ Failed");
-      if (!storedToken) throw new Error("Token storage failed");
-
-      // Reset loading state first
-      setLoading(false);
-
-      // Handle successful login
-      if (onLogin) {
-        console.log("Calling onLogin callback");
-        onLogin(data.access_token);
-      }
-
-  
-    } catch (error) {
-      console.error("Full token exchange error:", error);
-      Alert.alert(
-        "Login Failed",
-        error.message.includes("grant_type")
-          ? "Authentication configuration error"
-          : error.message
-      );
-      setLoading(false);
+    if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.json();
+      console.error("Token exchange failed:", errorData);
+      throw new Error(errorData.error_description || "Token exchange failed");
     }
-  };
+
+    const data = await tokenResponse.json();
+
+    // ✅ Save tokens
+    await SecureStore.setItemAsync("auth_token", data.access_token);
+    await SecureStore.setItemAsync("refresh_token", data.refresh_token);
+
+    // ✅ Save Set-Cookie header if available
+    const setCookieHeader = tokenResponse.headers.get("set-cookie");
+      console.log("Checking Existence of Cookies:", setCookieHeader);
+    if (setCookieHeader) {
+      console.log("Saving cookie:", setCookieHeader);
+      await SecureStore.setItemAsync("session_cookie", setCookieHeader);
+    }
+
+    console.log("Login successful, navigating...");
+    setLoading(false);
+    onLogin(data.access_token);
+
+  } catch (error) {
+    console.error("Full token exchange error:", error);
+    Alert.alert("Login Failed", error.message);
+    setLoading(false);
+  }
+};
 
   const handleLogin = () => {
-    if (!validateForm()) return;
     setLoading(true);
     promptAsync().catch((error) => {
       console.error("Prompt Error:", error);
       setLoading(false);
     });
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    if (!email.trim()) newErrors.email = "Email is required";
-    if (!password) newErrors.password = "Password is required";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
   return (
@@ -177,59 +153,6 @@ const Login = ({ navigation }) => {
           </View>
 
           <View style={styles.form}>
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="mail-outline"
-                size={24}
-                color={theme.colors.coral}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Enter phone number"
-                value={email}
-                onChangeText={(text) => {
-                  setEmail(text);
-                  setErrors({ ...errors, email: null });
-                }}
-                keyboardType="default"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              {errors.email && (
-                <Text style={styles.errorText}>{errors.email}</Text>
-              )}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="lock-closed-outline"
-                size={24}
-                color={theme.colors.coral}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                value={password}
-                onChangeText={(text) => {
-                  setPassword(text);
-                  setErrors({ ...errors, password: null });
-                }}
-                secureTextEntry={!showPassword}
-              />
-              <TouchableOpacity
-                onPress={() => setShowPassword(!showPassword)}
-                style={styles.eyeIcon}
-              >
-                <Ionicons
-                  name={showPassword ? "eye-off-outline" : "eye-outline"}
-                  size={24}
-                  color={theme.colors.coral}
-                />
-              </TouchableOpacity>
-              {errors.password && (
-                <Text style={styles.errorText}>{errors.password}</Text>
-              )}
-            </View>
 
             <TouchableOpacity
               style={[styles.button, loading && styles.buttonDisabled]}

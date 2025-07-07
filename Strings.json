@@ -1,0 +1,12 @@
+{
+"URL":"https://orb.astromyllc.com/",
+"LOCALURL":"http://192.168.100.106:7013/",
+"PSTK_PUBLIC_KEY":"pk_live_06e69269b3dbbf1e2dff895ce667011a4f0e758f",
+"apisufix":"servicePost/",
+
+
+"servicepointca":"servicePost/ca",
+"servicepointCommR":"servicePost/gcmr",
+"servicepointConvR":"servicePost/gcvr",
+"servicepointrto":"/rto"
+}

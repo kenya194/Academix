@@ -21,11 +21,6 @@ export default function LoginStack({ onLogin }) {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      Alert.alert(
-        "Debug Info",
-        `onLogin type: ${typeof onLogin}\n` +
-        `onLogin exists: ${!!onLogin}`
-      );
     }, 1000);
     return () => clearTimeout(timer);
   }, [onLogin]);
