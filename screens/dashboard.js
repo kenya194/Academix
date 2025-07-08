@@ -12,33 +12,31 @@ import {
   Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { makePostCall, handleMenuAction } from "../apiService";
 
 import React, { useState, useEffect } from "react";
 const { width } = Dimensions.get("window");
 
-
 const Dashboard = ({ navigation, selectedStudent }) => {
-  
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
-  
 
   const fetchStudentData = async () => {
     try {
       // Simulated API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setStudent({
-        name: "John Doe",
-        picture: "https://via.placeholder.com/150",
-        studentId: "STU2024001",
+        name: selectedStudent.name,
+        picture: selectedStudent.picture,
+        studentId: selectedStudent.studentId,
         course: "Computer Science",
         semester: "3rd Semester",
       });
     } catch (error) {
-      Alert.alert("Error", "Failed to load student data");
+      Alert.alert("Info", "Failed to load student data");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -51,7 +49,6 @@ const Dashboard = ({ navigation, selectedStudent }) => {
       // Fetch or display data for selectedStudent.id
     }
   }, [selectedStudent]);
-  
 
   useEffect(() => {
     if (!loading) {
@@ -72,16 +69,15 @@ const Dashboard = ({ navigation, selectedStudent }) => {
     setImageError(true);
   };
 
-
   const modules = [
-    { screen: 'Profile', icon: "person", label: "Profile" },
-    { screen: 'Results', icon: "document-text", label: "Results" },
-    { screen: 'Fees', icon: "wallet", label: "Fees" },
-    { screen: 'Settings', icon: "settings", label: "Settings" },
-    { screen: 'Notification', icon: "notifications", label: "Notifications" },
-    { screen: 'About', icon: "information-circle", label: "About" },
+    { screen: "Profile", icon: "person", label: "Profile" },
+    { screen: "Results", icon: "document-text", label: "Results" },
+    { screen: "Fees", icon: "wallet", label: "Fees" },
+    { screen: "Settings", icon: "settings", label: "Settings" },
+    { screen: "Notification", icon: "notifications", label: "Notifications" },
+    { screen: "About", icon: "information-circle", label: "About" },
   ];
-  
+
   const menuItems = [
     {
       id: "profile",
@@ -195,7 +191,25 @@ const Dashboard = ({ navigation, selectedStudent }) => {
             >
               <TouchableOpacity
                 style={styles.menuItem}
-                onPress={() => navigation.navigate(item.screen)}
+                onPress={() => {
+                  const screenName = item.screen.toLowerCase();
+
+                  // Only call the API if NOT going to "Profile"
+                  if (!screenName.includes("profile")) {
+                    const endpoint = `api/mobile/${screenName}Data`;
+                    const payload = { val: student?.studentId };
+
+                    handleMenuAction({
+                      endpoint,
+                      payload,
+                      navigation,
+                      screen: item.screen,
+                    });
+                  } else {
+                    // Just navigate without API call
+                    navigation.navigate(item.screen);
+                  }
+                }}
                 activeOpacity={0.7}
               >
                 <View
@@ -269,6 +283,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 10,
     color: "#333",
+    textAlign: 'center',
   },
   studentId: {
     fontSize: 16,

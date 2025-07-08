@@ -25,7 +25,6 @@ const StudentCard = ({ student, navigation, menuItems, fadeAnim }) => {
         </View>
         <Text style={styles.name}>{student?.name || 'Student Name'}</Text>
         <Text style={styles.studentId}>{student?.studentId || 'Student ID'}</Text>
-        <Text style={styles.courseInfo}>{student?.course || 'Course'} • {student?.semester || 'Semester'}</Text>
       </View>
     </Animated.View>
   );
@@ -36,7 +35,7 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginBottom: 2,
-    backgroundColor: '#e0e1eb',
+    backgroundColor: '#e2efe8',
     padding: 10,
     borderRadius: 15,
     elevation: 3,
@@ -54,9 +53,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   profileImage: { width: '50%', height: '50%' },
-  name: { fontSize: 10, fontWeight: 'bold', marginTop: 10, color: '#333' },
+  name: { fontSize: 10, fontWeight: 'bold', marginTop: 10,textAlign: 'center', color: '#333' },
   studentId: { fontSize: 8, color: '#666', marginTop: 5 },
-  courseInfo: { fontSize: 6, color: '#888', marginTop: 5 },
 });
 
 

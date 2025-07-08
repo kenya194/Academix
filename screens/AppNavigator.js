@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import  { useState, useEffect, useContext } from "react";
 import { Dimensions, StyleSheet, TouchableOpacity } from "react-native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import Dashboard from "./dashboard";
@@ -26,7 +26,7 @@ const AppNavigator = () => {
 useEffect(() => {
     const postData = async () => {
       try {
-        const payload = { val: "0559442369" };
+        const payload = { val: "0243551617" };
         const result = await makePostCall('api/mobile/getSkimpStudentsByParentContact', payload);
 
         console.log('Raw API result:', result);
@@ -35,8 +35,6 @@ useEffect(() => {
           id: (index + 1).toString(),
           name: `${student.firstName} ${student.otherName} ${student.lastName}`.trim(),
           studentId: student.studentId,
-          course: student.studentClass || "Unknown",
-          semester: student.dateOfAdmission || "N/A",
           picture: student.picture && student.picture.trim() !== ""
             ? student.picture
             : "https://example.com/default-picture.jpg",
@@ -115,7 +113,7 @@ useEffect(() => {
       )}
       screenOptions={({ navigation }) => ({
         headerShown: true,
-        headerStyle: { height: 80 }, // custom header height
+        headerStyle: { height: 80 },
         drawerStyle: {
           width: Math.max(width * 0.35, 20),
           paddingTop: 80,

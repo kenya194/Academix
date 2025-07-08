@@ -1,6 +1,5 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import Login from "./login";
-import { Alert } from "react-native";
 import { useEffect, useContext } from "react";
 import log from "../logger";
 import { AuthContext } from "../AuthContext";
@@ -25,7 +24,7 @@ export default function LoginStack({ onLogin }) {
     return () => clearTimeout(timer);
   }, [onLogin]);
 
-  // ✅ THIS IS WHAT YOU'RE MISSING
+ 
   return (
     <Stack.Navigator>
       <Stack.Screen name="Login" options={{ headerShown: false }}>

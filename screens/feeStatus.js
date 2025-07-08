@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const Fees = () => {
+const Fees = (navigation, selectedStudent ) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [fees, setFees] = useState([]);
@@ -78,7 +78,7 @@ const Fees = () => {
         dueAmount: due
       });
     } catch (error) {
-      Alert.alert('Error', 'Failed to load fees data');
+      Alert.alert('Info', 'Failed to load fees data');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -293,6 +293,26 @@ const styles = StyleSheet.create({
   dueDate: {
     fontSize: 14,
     color: '#666',
+  },
+  logoutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
+    margin: 20,
+    padding: 15,
+    borderRadius: 10,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  logoutText: {
+    color: "#65e7d4",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginLeft: 10,
   },
 });
 

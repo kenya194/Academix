@@ -9,7 +9,6 @@ import theme from "./theme";
 import * as SecureStore from "expo-secure-store";
 import LoginStack from "./screens/LoginStack";
 import { AuthContext } from "./AuthContext";
-import { LogBox } from "react-native";
 export const navigationRef = React.createRef();
 
 // Initialize logging (keep your existing logging setup)

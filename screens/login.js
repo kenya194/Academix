@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
@@ -15,7 +14,6 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthRequest, makeRedirectUri } from "expo-auth-session";
 import * as SecureStore from "expo-secure-store";
-import { CommonActions } from "@react-navigation/native";
 import theme from "../theme";
 import { AuthContext } from "../AuthContext";
 
