@@ -348,7 +348,7 @@ const Results = ({ navigation, route }) => {
           ])
         }
       >
-        <Ionicons name="log-out-outline" size={24} color="#65ade7" />
+        <Ionicons name="home" size={24} color="#65ade7" />
         <Text style={styles.logoutText}>Home</Text>
       </TouchableOpacity>
     </ScrollView>

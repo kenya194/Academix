@@ -6,7 +6,7 @@ import { Alert } from 'react-native';
 
 // Example API base config
 const api = axios.create({
-  baseURL: Strings.LOCALURL,
+  baseURL: Strings.URL,
   timeout: 15000,
   withCredentials: true, // to enable cookies
 });

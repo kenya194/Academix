@@ -56,7 +56,7 @@ const StudentAccountList = ({
           }}
           style={styles.logoutButton}
         >
-          <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
+          <Ionicons name="home" size={24} color="#FF3B30" />
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </Animated.View>

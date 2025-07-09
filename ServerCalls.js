@@ -3,7 +3,7 @@ import * as Strings from "./Strings.json";
 import { convertBase } from "baseroo";
 import { Buffer } from "buffer";
 
-let url = Strings.LOCALURL;
+let url = Strings.URL;
 //global.cr;
 global.transCheck;
 
