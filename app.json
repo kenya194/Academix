@@ -8,8 +8,14 @@
     "userInterfaceStyle": "light",
     "scheme": "academix",
     "jsEngine": "jsc",
-    "assetBundlePatterns": ["**/*"],
-    "platforms": ["ios", "android", "web"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "ios": {
       "supportsTablet": true,
       "jsEngine": "hermes",
@@ -17,7 +23,9 @@
       "infoPlist": {
         "CFBundleURLTypes": [
           {
-            "CFBundleURLSchemes": ["academix"]
+            "CFBundleURLSchemes": [
+              "academix"
+            ]
           }
         ]
       }
@@ -33,10 +41,15 @@
               "host": "oauthredirect"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ],
-      "permissions": ["android.permission.INTERNET"]
+      "permissions": [
+        "android.permission.INTERNET"
+      ]
     },
     "plugins": [
       "expo-secure-store",
@@ -51,6 +64,11 @@
     ],
     "runtimeVersion": {
       "policy": "sdkVersion"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "27f28cea-8c7d-4059-b312-150b61f7f1b6"
+      }
     }
   }
 }
