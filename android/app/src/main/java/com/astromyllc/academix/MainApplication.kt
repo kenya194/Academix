@@ -1,4 +1,4 @@
-package com.academix
+package com.astromyllc.academix
 
 import android.app.Application
 import android.content.res.Configuration

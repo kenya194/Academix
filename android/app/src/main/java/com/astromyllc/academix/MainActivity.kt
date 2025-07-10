@@ -1,4 +1,4 @@
-package com.academix
+package com.astromyllc.academix
 
 import android.os.Build
 import android.os.Bundle
