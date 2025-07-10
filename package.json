@@ -32,9 +32,10 @@
     "metro-resolver": "0.82.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "react-native": "0.79.2",
+    "react-native": "^0.79.5",
     "react-native-app-auth": "^6.4.0",
     "react-native-gesture-handler": "~2.24.0",
+    "react-native-gradle-plugin": "^0.71.19",
     "react-native-logs": "^5.3.0",
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
@@ -42,6 +43,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
+    "@react-native-community/cli-platform-android": "^18.0.0",
     "expo": "^53.0.9"
   },
   "private": true
