@@ -3,19 +3,38 @@
     "version": ">= 7.8.2"
   },
   "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
     "preview": {
-      "distribution": "internal"
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug",
+        "env": {
+          "APP_AUTH_REDIRECT_SCHEME": "com.astromyllc.solar"
+        }
+      }
+    },
+    "preview2": {
+      "android": {
+        "gradleCommand": ":app:assembleDebug",
+        "env": {
+          "APP_AUTH_REDIRECT_SCHEME": "com.astromyllc.solar"
+        }
+      }
+    },
+    "preview3": {
+      "developmentClient": true,
+      "android": {
+        "env": {
+          "APP_AUTH_REDIRECT_SCHEME": "com.astromyllc.solar"
+        }
+      }
     },
     "production": {
-      "android": {
-        "buildType": "app-bundle"
-      },
       "env": {
-        "EXPO_APP_AUTH_REDIRECT_SCHEME": "solar"
+        "APP_AUTH_REDIRECT_SCHEME": "com.astromyllc.solar"
+      },
+      "android": {
+        "buildType": "app-bundle",
+        "gradleCommand": ":app:assembleRelease"
       }
     }
   },
