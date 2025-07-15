@@ -17,6 +17,8 @@ const theme = {
       softBlue:'#87cefa',
       lightYellow:'#fffacd', 
       lightTeal:'#afeeee',
+      lime:'#00ff00',
+      lightLime:'#324b32ff',
     },
   };
   

@@ -1,35 +1,34 @@
 {
   "expo": {
-    "name": "Academix",
-    "slug": "Academix",
-    "entryPoint": "./App.js",
+    "name": "Solar",
+    "slug": "Solar",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "scheme": "academix",
+    "scheme": "solar",
     "jsEngine": "jsc",
     "assetBundlePatterns": ["**/*"],
     "platforms": ["ios", "android", "web"],
     "ios": {
       "supportsTablet": true,
       "jsEngine": "hermes",
-      "bundleIdentifier": "com.astromyllc.academix",
+      "bundleIdentifier": "com.astromyllc.solar",
       "infoPlist": {
         "CFBundleURLTypes": [
           {
-            "CFBundleURLSchemes": ["academix"]
+            "CFBundleURLSchemes": ["solar"]
           }
         ]
       }
     },
     "android": {
-      "package": "com.astromyllc.academix",
+      "package": "com.astromyllc.solar",
       "intentFilters": [
         {
           "action": "VIEW",
           "data": [
             {
-              "scheme": "academix",
+              "scheme": "solar",
               "host": "oauthredirect"
             }
           ],
@@ -47,10 +46,17 @@
             "useFrameworks": "static"
           }
         }
-      ]
+      ],
+      "expo-asset",
+      "expo-web-browser"
     ],
     "runtimeVersion": {
       "policy": "sdkVersion"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "35a165b7-7f76-457d-9e82-1c1a48e259fb"
+      }
     }
   }
 }

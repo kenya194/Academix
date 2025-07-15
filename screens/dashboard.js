@@ -23,6 +23,7 @@ const Dashboard = ({ navigation, selectedStudent }) => {
   const [imageError, setImageError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
+  const [activeChart, setActiveChart] = useState("trend");
 
   const fetchStudentData = async () => {
     try {
@@ -225,6 +226,33 @@ const Dashboard = ({ navigation, selectedStudent }) => {
             </Animated.View>
           ))}
         </View>
+        <View style={styles.chatMain}>
+          <View style={styles.chartNav}>
+            <TouchableOpacity
+              style={styles.chartNavContent}
+              onPress={() => setActiveChart("trend")}
+            >
+              <Text style={styles.navText}>G </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.chartNavContent}
+              onPress={() => setActiveChart("radar")}
+            >
+              <Text style={styles.navText}>P </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.chartNavContent}
+              onPress={() => setActiveChart("heatmap")}
+            >
+              <Text style={styles.navText}>A</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.chartArea}>
+            
+          </View>
+        </View>
       </Animated.View>
     </ScrollView>
   );
@@ -274,6 +302,62 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
+  chatMain: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center", // or "space-between" depending on layout
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    padding: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+  },
+  chartNav: {
+    width: "15%",
+    borderRadius: 10,
+    flexDirection: "column",
+    overflow: "hidden",
+    backgroundColor: "#fff",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    marginRight: 10,
+    justifyContent: "space-between",
+    paddingVertical: 10,
+  },
+  chartNavContent: {
+    width: "100%",
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 0,
+    borderRadius: 10,
+    overflow: "hidden",
+    backgroundColor: "#eeeeee",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    marginBottom: 10, // optional for spacing
+  },
+  chartArea: {
+    width: "80%",
+    flex: 1,
+    borderRadius: 10,
+    overflow: "hidden",
+    backgroundColor: "#eeeeee",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    minHeight: 220,
+  },
   profileImage: {
     width: "100%",
     height: "100%",
@@ -283,7 +367,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 10,
     color: "#333",
-    textAlign: 'center',
+    textAlign: "center",
   },
   studentId: {
     fontSize: 16,

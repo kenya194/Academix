@@ -10,13 +10,13 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthRequest, makeRedirectUri } from "expo-auth-session";
 import * as SecureStore from "expo-secure-store";
 import theme from "../theme";
 import { AuthContext } from "../AuthContext";
-
 // Keycloak configuration
 const keycloakConfig = {
   issuer: "https://keycloak.astromyllc.com/realms/ShootingStar",
@@ -37,9 +37,11 @@ const Login = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  
+const logoImg = require("../assets/logo.png");
 
   const redirectUri = makeRedirectUri({
-    native: "academix://oauthredirect",
+    native: "solar://oauthredirect",
     useProxy: __DEV__, // Only use proxy in development
   });
 
@@ -75,55 +77,54 @@ const Login = ({ navigation }) => {
   }, [response]);
 
   const exchangeCodeForToken = async (code) => {
-  try {
-    console.log("Starting token exchange...");
+    try {
+      console.log("Starting token exchange...");
 
-    const formData = new URLSearchParams();
-    formData.append("grant_type", "authorization_code");
-    formData.append("client_id", keycloakConfig.clientId);
-    formData.append("code", code);
-    formData.append("redirect_uri", redirectUri);
-    formData.append("code_verifier", request?.codeVerifier || "");
+      const formData = new URLSearchParams();
+      formData.append("grant_type", "authorization_code");
+      formData.append("client_id", keycloakConfig.clientId);
+      formData.append("code", code);
+      formData.append("redirect_uri", redirectUri);
+      formData.append("code_verifier", request?.codeVerifier || "");
 
-    const tokenResponse = await fetch(discovery.tokenEndpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Accept: "application/json",
-      },
-      body: formData.toString(),
-    });
+      const tokenResponse = await fetch(discovery.tokenEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Accept: "application/json",
+        },
+        body: formData.toString(),
+      });
 
-    if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.json();
-      console.error("Token exchange failed:", errorData);
-      throw new Error(errorData.error_description || "Token exchange failed");
-    }
+      if (!tokenResponse.ok) {
+        const errorData = await tokenResponse.json();
+        console.error("Token exchange failed:", errorData);
+        throw new Error(errorData.error_description || "Token exchange failed");
+      }
 
-    const data = await tokenResponse.json();
+      const data = await tokenResponse.json();
 
-    // ✅ Save tokens
-    await SecureStore.setItemAsync("auth_token", data.access_token);
-    await SecureStore.setItemAsync("refresh_token", data.refresh_token);
+      // ✅ Save tokens
+      await SecureStore.setItemAsync("auth_token", data.access_token);
+      await SecureStore.setItemAsync("refresh_token", data.refresh_token);
 
-    // ✅ Save Set-Cookie header if available
-    const setCookieHeader = tokenResponse.headers.get("set-cookie");
+      // ✅ Save Set-Cookie header if available
+      const setCookieHeader = tokenResponse.headers.get("set-cookie");
       console.log("Checking Existence of Cookies:", setCookieHeader);
-    if (setCookieHeader) {
-      console.log("Saving cookie:", setCookieHeader);
-      await SecureStore.setItemAsync("session_cookie", setCookieHeader);
+      if (setCookieHeader) {
+        console.log("Saving cookie:", setCookieHeader);
+        await SecureStore.setItemAsync("session_cookie", setCookieHeader);
+      }
+
+      console.log("Login successful, navigating...");
+      setLoading(false);
+      onLogin(data.access_token);
+    } catch (error) {
+      console.error("Full token exchange error:", error);
+      Alert.alert("Login Failed", error.message);
+      setLoading(false);
     }
-
-    console.log("Login successful, navigating...");
-    setLoading(false);
-    onLogin(data.access_token);
-
-  } catch (error) {
-    console.error("Full token exchange error:", error);
-    Alert.alert("Login Failed", error.message);
-    setLoading(false);
-  }
-};
+  };
 
   const handleLogin = () => {
     setLoading(true);
@@ -141,17 +142,16 @@ const Login = ({ navigation }) => {
       >
         <View style={styles.content}>
           <View style={styles.header}>
-            <Ionicons
-              name="school-outline"
-              size={80}
-              color={theme.colors.softBlue}
+            <Image
+              source={logoImg} 
+              style={{ width: 80, height: 80, marginBottom: 10 }}
+              resizeMode="contain"
             />
-            <Text style={styles.title}>Academix</Text>
+            <Text style={styles.title}>Solar</Text>
             <Text style={styles.subtitle}>Parent Portal</Text>
           </View>
 
           <View style={styles.form}>
-
             <TouchableOpacity
               style={[styles.button, loading && styles.buttonDisabled]}
               onPress={handleLogin}
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   button: {
     width: "100%",
     padding: 15,
-    backgroundColor: theme.colors.softBlue,
+    backgroundColor: theme.colors.lightLime,
     borderRadius: 10,
     alignItems: "center",
     marginTop: 10,
