@@ -13,7 +13,7 @@ import { authorize, refresh, revoke } from 'react-native-app-auth';
 const keycloakConfig = {
   issuer: 'https://keycloak.astromyllc.com/realms/SootingStar',
   clientId: 'mobileClient',
-  redirectUrl: 'solar://oauthredirect',
+  redirectUrl: 'com.astromyllc.solar://oauthredirect',
   scopes: ['openid', 'profile', 'email'],
   serviceConfiguration: {
     authorizationEndpoint: 'https://keycloak.astromyllc.com/realms/SootingStar/protocol/openid-connect/auth',
