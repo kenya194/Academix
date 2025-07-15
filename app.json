@@ -23,19 +23,19 @@
     },
     "android": {
       "package": "com.astromyllc.solar",
+      "permissions": ["android.permission.INTERNET"],
       "intentFilters": [
         {
           "action": "VIEW",
           "data": [
             {
-              "scheme": "solar", 
-              "host": "oauthredirect" 
+              "scheme": "solar",
+              "host": "oauthredirect"
             }
           ],
           "category": ["BROWSABLE", "DEFAULT"]
         }
-      ],
-      "permissions": ["android.permission.INTERNET"]
+      ]
     },
     "plugins": [
       "expo-secure-store",
