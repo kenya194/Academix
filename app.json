@@ -35,7 +35,10 @@
           "category": ["BROWSABLE", "DEFAULT"]
         }
       ],
-      "permissions": ["android.permission.INTERNET"]
+      "permissions": ["android.permission.INTERNET"],
+      "manifestPlaceholders": {
+        "appAuthRedirectScheme": "solar"
+      }
     },
     "plugins": [
       "expo-secure-store",
