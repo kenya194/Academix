@@ -13,6 +13,9 @@
     "production": {
       "android": {
         "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_APP_AUTH_REDIRECT_SCHEME": "solar"
       }
     }
   },
