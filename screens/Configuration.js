@@ -1,5 +1,6 @@
 //import { authorize, refresh } from 'react-native-app-auth';
 import { authorize, refresh, revoke } from 'react-native-app-auth';
+import { Alert } from 'react-native';
 
 /*const keycloakConfig = {
   issuer: 'https://keycloak.astromyllc.com/realms/SootingStar',
@@ -22,6 +23,8 @@ const keycloakConfig = {
   },
   dangerouslyAllowInsecureHttpRequests: false,
 };
+
+Alert.alert("Redirecting to:\n", config.redirectUrl); 
 
 // Login function
 async function login() {

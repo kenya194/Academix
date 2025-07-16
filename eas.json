@@ -1,13 +1,13 @@
 {
   "cli": {
     "version": ">= 7.8.2",
-    "appVersionSource": "local" 
+    "appVersionSource": "local"
   },
   "build": {
     "preview": {
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleDebug",
+        "gradleCommand": ":app:assembleDebug -PappAuthRedirectScheme=com.astromyllc.solar",
         "env": {
           "APP_AUTH_REDIRECT_SCHEME": "com.astromyllc.solar",
           "EXPO_NO_CACHE": "1"
@@ -21,7 +21,7 @@
       },
       "android": {
         "buildType": "app-bundle",
-        "gradleCommand": ":app:assembleRelease"
+        "gradleCommand": ":app:assembleRelease -PappAuthRedirectScheme=com.astromyllc.solar"
       }
     }
   }
