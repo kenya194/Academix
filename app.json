@@ -43,6 +43,9 @@
           "required": false
         }
       ],
+      "manifestPlaceholders": {
+        "appAuthRedirectScheme": "com.astromyllc.solar"
+      },
       "intentFilters": [
         {
           "action": "VIEW",
