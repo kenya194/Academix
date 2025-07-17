@@ -33,12 +33,12 @@ const Profile = ({ navigation, selectedStudent }) => {
         studentId: "2024001",
         course: "Computer Science",
         semester: "3rd Semester",
-        department: "Science",
+        // department: "Science",
         dateOfBirth: "2005-05-15",
         address: "123 School Street, City, Country",
         profilePicture: "https://via.placeholder.com/150",
         emergencyContact: "+1987654321",
-        bloodGroup: "O+",
+        // bloodGroup: "O+",
         enrollmentDate: "2023-09-01",
       });
     } catch (error) {
@@ -125,11 +125,12 @@ const Profile = ({ navigation, selectedStudent }) => {
             value={formatDate(student?.dateOfBirth)}
             icon="calendar-outline"
           />
-          <InfoRow
+          {/* <InfoRow
             label="Blood Group"
             value={student?.bloodGroup}
             icon="water-outline"
-          />
+          /> */}
+
         </View>
       </View>
 
@@ -143,11 +144,11 @@ const Profile = ({ navigation, selectedStudent }) => {
             value={student?.semester}
             icon="layers-outline"
           />
-          <InfoRow
+          {/* <InfoRow
             label="Department"
             value={student?.department}
             icon="business-outline"
-          />
+          /> */}
         </View>
       </View>
 
