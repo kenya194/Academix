@@ -8,7 +8,6 @@
     "userInterfaceStyle": "light",
     "scheme": "com.astromyllc.solar",
     "jsEngine": "jsc",
-
     "splash": {
       "image": "./assets/logo.png",
       "resizeMode": "contain",
@@ -23,7 +22,7 @@
       "infoPlist": {
         "CFBundleURLTypes": [
           {
-            "CFBundleURLSchemes": ["solar"]
+            "CFBundleURLSchemes": ["com.astromyllc.solar"]
           }
         ]
       }

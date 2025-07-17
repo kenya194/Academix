@@ -41,7 +41,7 @@ const Login = ({ navigation }) => {
 const logoImg = require("../assets/logo.png");
 
   const redirectUri = makeRedirectUri({
-    native: "solar://oauthredirect",
+    native: "com.astromyllc.solar://oauthredirect",
     useProxy: __DEV__, // Only use proxy in development
   });
 
@@ -128,6 +128,8 @@ const logoImg = require("../assets/logo.png");
 
   const handleLogin = () => {
     setLoading(true);
+    
+  Alert.alert("Redirect URI", redirectUri);
     promptAsync().catch((error) => {
       console.error("Prompt Error:", error);
       setLoading(false);
