@@ -22,9 +22,7 @@ const keycloakConfig = {
     revocationEndpoint: 'https://keycloak.astromyllc.com/realms/SootingStar/protocol/openid-connect/revoke'
   },
   dangerouslyAllowInsecureHttpRequests: false,
-};
-
-Alert.alert("Redirecting to:\n", config.redirectUrl); 
+}; 
 
 // Login function
 async function login() {

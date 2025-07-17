@@ -128,8 +128,6 @@ const logoImg = require("../assets/logo.png");
 
   const handleLogin = () => {
     setLoading(true);
-    
-  Alert.alert("Redirect URI", redirectUri);
     promptAsync().catch((error) => {
       console.error("Prompt Error:", error);
       setLoading(false);
