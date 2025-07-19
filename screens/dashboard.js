@@ -13,6 +13,11 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { makePostCall, handleMenuAction } from "../apiService";
+import { LineChart, RadarChart, HeatmapChart } from "../charts";
+import theme from "../theme";
+
+// Add this debug line right after imports:
+console.log("Imported RadarChart:", RadarChart); // Should log a function
 
 import React, { useState, useEffect } from "react";
 const { width } = Dimensions.get("window");
@@ -25,9 +30,51 @@ const Dashboard = ({ navigation, selectedStudent }) => {
   const fadeAnim = useState(new Animated.Value(0))[0];
   const [activeChart, setActiveChart] = useState("trend");
 
+  const trendImg = require("../assets/trendImg.png");
+  const perfImg = require("../assets/performanceImg.png");
+  const attendImg = require("../assets/attendImg.png");
+
+  //Sample data
+  const radarData = [
+    { label: "Math", value: 85 },
+    { label: "Science", value: 78 },
+    { label: "History", value: 42 },
+    { label: "English", value: 100 },
+    { label: "Arts", value: 75 },
+    { label: "Sports", value: 30 },
+  ];
+
+  //Sample linear Data
+  const trendData = [
+    { label: "Jan", value: 50 },
+    { label: "Feb", value: 60 },
+    { label: "Mar", value: 75 },
+    { label: "Apr", value: 90 },
+    { label: "May", value: 45 },
+  ];
+
+  //Sample linear Data
+  const attendData = [
+    { month: "Jan", week: 1, absences: 2 },
+    { month: "Jan", week: 2, absences: 1 },
+    { month: "Jan", week: 3, absences: 2 },
+    { month: "Jan", week: 4, absences: 4 },
+    { month: "Feb", week: 1, absences: 2 },
+    { month: "Feb", week: 2, absences: 0 },
+    { month: "Feb", week: 3, absences: 5 },
+    { month: "Feb", week: 4, absences: 0 },
+    { month: "Mar", week: 1, absences: 2 },
+    { month: "Mar", week: 2, absences: 0 },
+    { month: "Mar", week: 3, absences: 2 },
+    { month: "Mar", week: 4, absences: 0 },
+    { month: "Apr", week: 1, absences: 2 },
+    { month: "Apr", week: 2, absences: 0 },
+    { month: "Apr", week: 3, absences: 2 },
+    { month: "Apr", week: 4, absences: 0 },
+  ];
+
   const fetchStudentData = async () => {
     try {
-      // Simulated API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setStudent({
         name: selectedStudent.name,
@@ -232,25 +279,60 @@ const Dashboard = ({ navigation, selectedStudent }) => {
               style={styles.chartNavContent}
               onPress={() => setActiveChart("trend")}
             >
-              <Text style={styles.navText}>G </Text>
+              <Image
+                source={trendImg}
+                style={{ flex: 1, width: "100%", height: "100%" }}
+                resizeMode="contain"
+              />
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.chartNavContent}
               onPress={() => setActiveChart("radar")}
             >
-              <Text style={styles.navText}>P </Text>
+              <Image
+                source={perfImg}
+                style={{ flex: 1, width: "100%", height: "100%" }}
+                resizeMode="contain"
+              />
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.chartNavContent}
               onPress={() => setActiveChart("heatmap")}
             >
-              <Text style={styles.navText}>A</Text>
+              <Image
+                source={attendImg}
+                style={{ flex: 1, width: "100%", height: "100%" }}
+                resizeMode="contain"
+              />
             </TouchableOpacity>
           </View>
+
+          
           <View style={styles.chartArea}>
-            
+            {activeChart === "trend" && (
+              <View style={styles.chartPlaceholder}>
+                <LineChart data={trendData} color="#2196F3" />
+              </View>
+            )}
+            {activeChart === "radar" && (
+              <RadarChart
+                data={radarData}
+                containerWidth="100%"
+                containerHeight={220}
+              />
+            )}
+            {activeChart === "heatmap" && (
+              <View style={styles.chartPlaceholder}>
+                <HeatmapChart
+                  data={attendData}
+                  colorRange={["#fff7ec", "#fee8c8", "#fdbb84", "#d7301f"]}
+                  containerWidth={width * 0.69}
+                  fixedHeight={210} 
+                />
+              </View>
+            )}
           </View>
         </View>
       </Animated.View>
@@ -357,7 +439,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     minHeight: 220,
+    justifyContent: "center",
+    alignItems: "center",
   },
+chartPlaceholder: {
+  width: '100%',
+  height: '100%',
+  justifyContent: 'center',
+  alignItems: 'center',
+},
   profileImage: {
     width: "100%",
     height: "100%",
