@@ -2,6 +2,7 @@ export default {
   expo: {
     name: "Solar",
     slug: "Solar",
+    owner: "astromy-dev",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
@@ -78,7 +79,7 @@ export default {
     },
     extra: {
       eas: {
-        projectId: "35a165b7-7f76-457d-9e82-1c1a48e259fb"
+       "projectId": "cea4e93d-478b-4763-81a2-0b8fff378d62"
       }
     }
   }

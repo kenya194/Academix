@@ -1,28 +1,21 @@
 {
   "cli": {
-    "version": ">= 7.8.2",
-    "appVersionSource": "local"
+    "version": ">= 16.15.0",
+    "appVersionSource": "remote"
   },
   "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
     "preview": {
-      "android": {
-        "buildType": "apk",
-        "gradleCommand": ":app:assembleDebug -PappAuthRedirectScheme=com.astromyllc.solar",
-        "env": {
-          "APP_AUTH_REDIRECT_SCHEME": "com.astromyllc.solar",
-          "EXPO_NO_CACHE": "1"
-        }
-      }
+      "distribution": "internal"
     },
     "production": {
-      "env": {
-        "APP_AUTH_REDIRECT_SCHEME": "com.astromyllc.solar",
-        "EXPO_NO_CACHE": "1"
-      },
-      "android": {
-        "buildType": "app-bundle",
-        "gradleCommand": ":app:assembleRelease -PappAuthRedirectScheme=com.astromyllc.solar"
-      }
+      "autoIncrement": true
     }
+  },
+  "submit": {
+    "production": {}
   }
 }
