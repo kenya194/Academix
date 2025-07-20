@@ -16,15 +16,16 @@ export default {
     assetBundlePatterns: ["**/*"],
     platforms: ["ios", "android", "web"],
     ios: {
-      supportsTablet: true,
-      jsEngine: "hermes",
-      bundleIdentifier: "com.astromyllc.solar",
-      infoPlist: {
-        CFBundleURLTypes: [
+      "supportsTablet": true,
+      "jsEngine": "hermes",
+      "bundleIdentifier": "com.astromyllc.solar",
+      "infoPlist": {
+        "CFBundleURLTypes": [
           {
-            CFBundleURLSchemes: ["com.astromyllc.solar"]
+            "CFBundleURLSchemes": ["com.astromyllc.solar"]
           }
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     android: {
