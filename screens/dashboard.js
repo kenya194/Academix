@@ -121,6 +121,13 @@ const Dashboard = ({ navigation, selectedStudent }) => {
       screen: "Notifications",
       color: "#607D8B",
     },
+    {
+      id: "analytics",
+      icon: "analytics-outline",
+      label: "Analytics",
+      screen: "Analytics",
+      color: "#673AB7",
+    },
   ];
 
   if (loading && !refreshing) {

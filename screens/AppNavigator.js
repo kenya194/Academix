@@ -10,6 +10,7 @@ import StudentAccountList from "./StudentAccountList";
 import { Ionicons } from "@expo/vector-icons";
 import { AuthContext } from "../AuthContext";
 import { makePostCall } from '../apiService';
+import Analytics from "./Analytics";
 
 const Drawer = createDrawerNavigator();
 const { width } = Dimensions.get("window");
@@ -80,6 +81,13 @@ useEffect(() => {
       screen: "Fees",
       icon: "cash",
       color: "#9C27B0",
+    },
+    {
+      id: "analytics",
+      label: "Analytics",
+      screen: "Analytics",
+      icon: "analytics",
+      color: "#673AB7",
     },
   ];
 
@@ -193,6 +201,22 @@ useEffect(() => {
         })}
       >
         {(props) => <Fees {...props} selectedStudent={selectedStudent} />}
+      </Drawer.Screen>
+
+      <Drawer.Screen
+        name="Analytics"
+        options={({ navigation }) => ({
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.toggleDrawer()}
+              style={{ marginLeft: 15 }}
+            >
+              <Ionicons name="people" size={28} color="#4CAF50" />
+            </TouchableOpacity>
+          ),
+        })}
+      >
+        {(props) => <Analytics {...props} selectedStudent={selectedStudent} />}
       </Drawer.Screen>
     </Drawer.Navigator>
   );
