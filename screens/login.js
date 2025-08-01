@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,6 @@ import {
   Keyboard,
   Image,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useAuthRequest, makeRedirectUri } from "expo-auth-session";
 import * as SecureStore from "expo-secure-store";
 import theme from "../theme";
@@ -32,16 +31,12 @@ const discovery = {
 
 const Login = ({ navigation }) => {
   const { onLogin } = useContext(AuthContext);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState({});
   
 const logoImg = require("../assets/logo.png");
 
   const redirectUri = makeRedirectUri({
-    native: "com.astromyllc.solar://oauthredirect",
+    native: "com.astromyllc.academix://oauthredirect",
     useProxy: __DEV__, // Only use proxy in development
   });
 
@@ -128,6 +123,8 @@ const logoImg = require("../assets/logo.png");
 
   const handleLogin = () => {
     setLoading(true);
+    
+  Alert.alert("Redirect URI", redirectUri);
     promptAsync().catch((error) => {
       console.error("Prompt Error:", error);
       setLoading(false);
@@ -144,10 +141,10 @@ const logoImg = require("../assets/logo.png");
           <View style={styles.header}>
             <Image
               source={logoImg} 
-              style={{ width: 80, height: 80, marginBottom: 10 }}
+              style={{ width: 100, height: 100, marginBottom: 10 }}
               resizeMode="contain"
             />
-            <Text style={styles.title}>Solar</Text>
+            <Text style={styles.title}>Academix</Text>
             <Text style={styles.subtitle}>Parent Portal</Text>
           </View>
 

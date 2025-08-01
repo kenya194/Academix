@@ -14,7 +14,7 @@ import { Alert } from 'react-native';
 const keycloakConfig = {
   issuer: 'https://keycloak.astromyllc.com/realms/SootingStar',
   clientId: 'mobileClient',
-  redirectUrl: 'com.astromyllc.solar://oauthredirect',
+  redirectUrl: 'com.astromyllc.academix://oauthredirect',
   scopes: ['openid', 'profile', 'email'],
   serviceConfiguration: {
     authorizationEndpoint: 'https://keycloak.astromyllc.com/realms/SootingStar/protocol/openid-connect/auth',

@@ -1,12 +1,13 @@
 {
-  "name": "solar",
+  "name": "academix",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "start": "EXPO_DEBUG=true expo start --clear",
     "android": "EXPO_DEBUG=true expo start --android --clear",
     "ios": "EXPO_DEBUG=true expo start --ios --clear",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@expo/metro-config": "~0.20.0",
@@ -42,8 +43,7 @@
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-svg": "15.11.2",
-    "victory-native": "^41.17.4",
-    "expo-dev-client": "~5.2.4"
+    "victory-native": "^41.17.4"
   },
   "expo": {
     "doctor": {
@@ -55,7 +55,9 @@
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@react-native-community/cli": "^19.1.0",
-    "expo": "53.0.19"
+    "expo": "53.0.19",
+    "patch-package": "^8.0.0",
+    "postinstall-postinstall": "^2.1.0"
   },
   "private": true
 }

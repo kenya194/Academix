@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
+import  { useState } from 'react';
+import { View, Text, Image, StyleSheet, Animated, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
-const StudentCard = ({ student, navigation, menuItems, fadeAnim }) => {
+const StudentCard = ({ student, fadeAnim }) => {
   const [imageError, setImageError] = useState(false);
 
   const handleImageError = () => setImageError(true);
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     elevation: 3,
   },
-  profileImage: { width: '50%', height: '50%' },
+  profileImage: { width: '100%', height: '100%' },
   name: { fontSize: 10, fontWeight: 'bold', marginTop: 10,textAlign: 'center', color: '#333' },
   studentId: { fontSize: 8, color: '#666', marginTop: 5 },
 });

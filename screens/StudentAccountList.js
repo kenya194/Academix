@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { View, FlatList, Animated, TouchableOpacity, StyleSheet,Text,Alert } from 'react-native';
 import StudentCard from './StudentCard';
 import { Ionicons } from '@expo/vector-icons';

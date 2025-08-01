@@ -101,14 +101,13 @@ const App = () => {
     <ErrorBoundary>
       <SafeAreaProvider>
         <NavigationContainer ref={navigationRef} theme={theme}>
-          {" "}
-          {/* Moved theme here */}
+         
           <AuthContext.Provider
             value={{
               onLogin: handleLogin,
               onLogout: handleLogout,
               token: authToken,
-              isLoggedIn, // Provide this for easier access
+              isLoggedIn, 
             }}
           >
             <StatusBar

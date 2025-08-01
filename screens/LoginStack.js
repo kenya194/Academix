@@ -1,14 +1,12 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import Login from "./login";
-import { useEffect, useContext } from "react";
+import { useEffect } from "react";
 import log from "../logger";
-import { AuthContext } from "../AuthContext";
 
 const Stack = createStackNavigator();
 let renderCount = 0;
 
 export default function LoginStack({ onLogin }) {
-  const { token } = useContext(AuthContext);
 
   useEffect(() => {
     console.log("DIRECT CONSOLE TEST - should appear in Metro");

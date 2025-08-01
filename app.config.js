@@ -1,16 +1,16 @@
 export default {
   expo: {
-    name: "Solar",
-    slug: "Solar",
+    name: "Academix",
+    slug: "Academix",
     owner: "astromy-dev",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
-    scheme: "com.astromyllc.solar",
+    scheme: "com.astromyllc.academix",
     jsEngine: "jsc",
     splash: {
-      image: "./assets/logo.png",
+      image: "./assets/icon.png",
       resizeMode: "contain",
       backgroundColor: "#ffffff"
     },
@@ -19,18 +19,18 @@ export default {
     ios: {
       "supportsTablet": true,
       "jsEngine": "hermes",
-      "bundleIdentifier": "com.astromyllc.solar",
+      "bundleIdentifier": "com.astromyllc.academix",
       "infoPlist": {
         "CFBundleURLTypes": [
           {
-            "CFBundleURLSchemes": ["com.astromyllc.solar"]
+            "CFBundleURLSchemes": ["com.astromyllc.academix"]
           }
         ],
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     android: {
-      package: "com.astromyllc.solar",
+      package: "com.astromyllc.academix",
       permissions: [
         "android.permission.INTERNET",
         "android.permission.CAMERA",
@@ -46,14 +46,14 @@ export default {
         }
       ],
       manifestPlaceholders: {
-        appAuthRedirectScheme: "com.astromyllc.solar"
+        appAuthRedirectScheme: "com.astromyllc.academix"
       },
       intentFilters: [
         {
           action: "VIEW",
           data: [
             {
-              scheme: "com.astromyllc.solar",
+              scheme: "com.astromyllc.academix",
               host: "oauthredirect"
             }
           ],

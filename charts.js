@@ -268,7 +268,7 @@ export const HeatmapChart = ({
             <SvgText
               key={`month-${col}`}
               x={10 + col * finalCellSize + finalCellSize/2}
-              y={15}
+              y={8}
               fontSize="10"
               fontWeight="bold"
               textAnchor="middle"
@@ -281,8 +281,8 @@ export const HeatmapChart = ({
           {weeks.map((week, row) => (
             <SvgText
               key={`week-${row}`}
-              x={5}
-              y={40 + row * finalCellSize + finalCellSize/2}
+              x={8}
+              y={20 + row * finalCellSize + finalCellSize/2}
               fontSize="10"
               fontWeight="bold"
               textAnchor="end"
@@ -297,7 +297,7 @@ export const HeatmapChart = ({
               <G 
                 key={`cell-${row}-${col}`} 
                 x={10 + col * finalCellSize} 
-                y={40 + row * finalCellSize}
+                y={20 + row * finalCellSize}
               >
                 <Rect
                   width={finalCellSize - 2}
