@@ -1,15 +1,17 @@
-import  { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Dimensions, StyleSheet, TouchableOpacity } from "react-native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import Dashboard from "./dashboard";
 import Profile from "./profilePage";
 import Results from "./resultsPage";
+import NotificationPage from "./notificationPage";
 import Fees from "./feeStatus";
 import Login from "./login";
 import StudentAccountList from "./StudentAccountList";
 import { Ionicons } from "@expo/vector-icons";
 import { AuthContext } from "../AuthContext";
-import { makePostCall } from '../apiService';
+import { makePostCall } from "../apiService";
+import InactiveAccountScreen from "./InactiveAccountScreen";
 
 const Drawer = createDrawerNavigator();
 const { width } = Dimensions.get("window");
@@ -21,31 +23,56 @@ const AppNavigator = () => {
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
-  
-
-useEffect(() => {
+  useEffect(() => {
     const postData = async () => {
       try {
         const payload = { val: "0243551617" };
-        const result = await makePostCall('api/mobile/getSkimpStudentsByParentContact', payload);
+        const result = await makePostCall(
+          "api/mobile/getSkimpStudentsByParentContact",
+          payload
+        );
 
-        console.log('Raw API result:', result);
+        console.log("Raw API result:", result);
 
         const formatted = result.map((student, index) => ({
-          id: (index + 1).toString(),
-          name: `${student.firstName} ${student.otherName} ${student.lastName}`.trim(),
+          id: (index + 1).toString(), // Your sequential ID
           studentId: student.studentId,
-          picture: student.picture && student.picture.trim() !== ""
-            ? student.picture
-            : "https://example.com/default-picture.jpg",
+          name: `${student.firstName} ${student.otherName || ""} ${
+            student.lastName
+          }`
+            .trim()
+            .replace(/\s+/g, " "),
+          dateOfAdmission: student.dateOfAdmission,
+          gender: student.gender,
+          nationality: student.nationality,
+          institutionCode: student.institutionCode,
+          studentClass: student.studentClass,
+          picture:
+            student.picture && student.picture.trim() !== ""
+              ? student.picture
+              : "https://example.com/default-picture.jpg",
+          status: "inactive", // student.status,
+          parents: student.parents
+            ? student.parents.map((parent) => ({
+                id: parent.id,
+                fullName: `${parent.firstNames} ${parent.lastName}`.trim(),
+                email: parent.email,
+                primaryContact: parent.contact1,
+                secondaryContact: parent.contact2 || null,
+                occupation: parent.occupation,
+                placeOfWork: parent.placeOfWork,
+                parentType: parent.parentType,
+                institutionCode: parent.institutionCode,
+              }))
+            : [],
         }));
 
         setStudents(formatted);
         setSelectedStudent(formatted[0]);
 
-        console.log('Formatted result:', formatted);
+        console.log("Formatted result:", formatted);
       } catch (err) {
-        console.error('Post call failed:', err);
+        console.error("Post call failed:", err);
       }
     };
 
@@ -81,10 +108,17 @@ useEffect(() => {
       icon: "cash",
       color: "#9C27B0",
     },
+    {
+      id: "notifications",
+      label: "Notifications",
+      screen: "Notifications",
+      icon: "notifications",
+      color: "#FF5722",
+    },
   ];
 
   if (!isLoggedIn) {
-      console.log("Login component is:", Login);
+    console.log("Login component is:", Login);
     return (
       <Drawer.Navigator
         screenOptions={{ headerShown: false }}
@@ -144,7 +178,18 @@ useEffect(() => {
           ),
         })}
       >
-        {(props) => <Dashboard {...props} selectedStudent={selectedStudent} />}
+        {(props) => {
+          // Redirect to InactiveAccountScreen if student is inactive
+          if (selectedStudent?.status === "inactive") {
+            return (
+              <InactiveAccountScreen
+                {...props}
+                route={{ params: { student: selectedStudent } }}
+              />
+            );
+          }
+          return <Dashboard {...props} selectedStudent={selectedStudent} />;
+        }}
       </Drawer.Screen>
 
       <Drawer.Screen
@@ -160,7 +205,17 @@ useEffect(() => {
           ),
         })}
       >
-        {(props) => <Profile {...props} selectedStudent={selectedStudent} />}
+        {(props) => {
+          if (selectedStudent?.status === "inactive") {
+            return (
+              <InactiveAccountScreen
+                {...props}
+                route={{ params: { student: selectedStudent } }}
+              />
+            );
+          }
+          return <Profile {...props} selectedStudent={selectedStudent} />;
+        }}
       </Drawer.Screen>
 
       <Drawer.Screen
@@ -176,7 +231,17 @@ useEffect(() => {
           ),
         })}
       >
-        {(props) => <Results {...props} selectedStudent={selectedStudent} />}
+        {(props) => {
+          if (selectedStudent?.status === "inactive") {
+            return (
+              <InactiveAccountScreen
+                {...props}
+                route={{ params: { student: selectedStudent } }}
+              />
+            );
+          }
+          return <Results {...props} selectedStudent={selectedStudent} />;
+        }}
       </Drawer.Screen>
 
       <Drawer.Screen
@@ -192,7 +257,45 @@ useEffect(() => {
           ),
         })}
       >
-        {(props) => <Fees {...props} selectedStudent={selectedStudent} />}
+        {(props) => {
+          if (selectedStudent?.status === "inactive") {
+            return (
+              <InactiveAccountScreen
+                {...props}
+                route={{ params: { student: selectedStudent } }}
+              />
+            );
+          }
+          return <Fees {...props} selectedStudent={selectedStudent} />;
+        }}
+      </Drawer.Screen>
+
+      <Drawer.Screen
+        name="Notifications"
+        options={({ navigation }) => ({
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.toggleDrawer()}
+              style={{ marginLeft: 15 }}
+            >
+              <Ionicons name="people" size={28} color="#4CAF50" />
+            </TouchableOpacity>
+          ),
+        })}
+      >
+        {(props) => {
+          if (selectedStudent?.status === "inactive") {
+            return (
+              <InactiveAccountScreen
+                {...props}
+                route={{ params: { student: selectedStudent } }}
+              />
+            );
+          }
+          return (
+            <NotificationPage {...props} selectedStudent={selectedStudent} />
+          );
+        }}
       </Drawer.Screen>
     </Drawer.Navigator>
   );

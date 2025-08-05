@@ -241,9 +241,10 @@ const Dashboard = ({ navigation, selectedStudent }) => {
                 style={styles.menuItem}
                 onPress={() => {
                   const screenName = item.screen.toLowerCase();
+                  const excludedScreens = ["profile", "notifications"];
 
                   // Only call the API if NOT going to "Profile"
-                  if (!screenName.includes("profile")) {
+                  if (!excludedScreens .includes(screenName)) {
                     const endpoint = `api/mobile/${screenName}Data`;
                     const payload = { val: student?.studentId };
 

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import {
   View,
@@ -17,7 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 const Profile = ({ navigation, selectedStudent }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [student, setStudent] = useState(null);
+  const [student, setStudent] = useState(selectedStudent); 
   const [isEditing, setIsEditing] = useState(false);
 
   /* ---------- Helpers ---------- */
@@ -28,48 +27,24 @@ const Profile = ({ navigation, selectedStudent }) => {
       day: "numeric",
     });
 
-  /* ---------- Mock fetch ---------- */
-  const fetchStudentData = async () => {
-    try {
-      console.log (selectedStudent)
-      await new Promise((r) => setTimeout(r, 1000)); // simulate API delay
-      setStudent({
-        id: "STU2024001",
-        studentId: "2024001",
-        profilePicture: "https://via.placeholder.com/150",
-        name: selectedStudent.name,
-        
-        email: "kenya@gmail.com",
-        primaryContact: "+233554184099",
-        secondaryContact: "+23320458789",
-        placeOfWork: "University of Energy",
-        relation: "Mother",
-        occupation: "Lecturer",
-
-        grade: "Year 2",
-        course: "Science",
-        semester: "1st Semester",
-        department: "Science",
-
-        address: "123 School Street, City, Country",
-        emergencyContact: "+1987654321",
-        enrollmentDate: "2023-09-01",
-      });
-    } catch (e) {
-      Alert.alert("Info", "Failed to load profile data");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+  /* ---------- Get primary parent ---------- */
+  const getPrimaryParent = () => {
+    if (!student?.parents || student.parents.length === 0) return null;
+    // Find mother first, then father, then first parent
+    return (
+      student.parents.find((p) => p.parentType?.toLowerCase() === "mother") ||
+      student.parents.find((p) => p.parentType?.toLowerCase() === "father") ||
+      student.parents[0]
+    );
   };
 
-  useEffect(() => {
-    fetchStudentData();
-  }, []);
+  const primaryParent = getPrimaryParent();
 
+  /* ---------- Refresh ---------- */
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchStudentData();
+    // Here you would typically refetch the student data
+    setTimeout(() => setRefreshing(false), 1000);
   }, []);
 
   /* ---------- Handle edit / save ---------- */
@@ -96,7 +71,7 @@ const Profile = ({ navigation, selectedStudent }) => {
   };
 
   /* ---------- UI ---------- */
-  if (loading && !refreshing) {
+  if (!student) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#4CAF50" />
@@ -120,84 +95,124 @@ const Profile = ({ navigation, selectedStudent }) => {
       <View style={styles.header}>
         <View style={styles.profileImageContainer}>
           <Image
-            source={{ uri: student?.profilePicture }}
+            source={{ uri: student.picture }}
             style={styles.profileImage}
           />
           <TouchableOpacity style={styles.editImageButton}>
             <Ionicons name="camera" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
-        <Text style={styles.name}>{student?.name}</Text>
-        <Text style={styles.studentId}>ID: {student?.studentId}</Text>
+        <Text style={styles.name}>{student.name}</Text>
+        <Text style={styles.studentId}>ID: {student.studentId}</Text>
       </View>
 
       {/* ---- Personal Info ---- */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Guardian Information</Text>
-          <TouchableOpacity onPress={handleEdit} style={styles.editButton}>
-            <Ionicons
-              name={isEditing ? "checkmark" : "pencil"}
-              size={24}
-              color="#4CAF50"
-            />
-          </TouchableOpacity>
+          {primaryParent && (
+            <TouchableOpacity onPress={handleEdit} style={styles.editButton}>
+              <Ionicons
+                name={isEditing ? "checkmark" : "pencil"}
+                size={24}
+                color="#4CAF50"
+              />
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.infoCard}>
           <InfoRow
             label="Email"
             icon="mail-outline"
-            value={student?.email}
+            value={primaryParent?.email || "N/A"}
             editable={isEditing}
-            onChange={(text) =>
-              setStudent((p) => ({ ...p, email: text }))
-            }
+            onChange={(text) => {
+              if (!primaryParent) return;
+              setStudent((prev) => ({
+                ...prev,
+                parents: prev.parents.map((p) =>
+                  p.id === primaryParent.id ? { ...p, email: text } : p
+                ),
+              }));
+            }}
           />
           <InfoRow
             label="Primary Contact"
             icon="call-outline"
-            value={student?.primaryContact}
-            editable={isEditing}
-            onChange={(text) =>
-              setStudent((p) => ({ ...p, primaryContact: text }))
+            value={
+              primaryParent?.primaryContact || primaryParent?.contact1 || "N/A"
             }
+            editable={isEditing}
+            onChange={(text) => {
+              if (!primaryParent) return;
+              setStudent((prev) => ({
+                ...prev,
+                parents: prev.parents.map((p) =>
+                  p.id === primaryParent.id ? { ...p, contact1: text } : p
+                ),
+              }));
+            }}
           />
           <InfoRow
             label="Secondary Contact"
             icon="call-outline"
-            value={student?.secondaryContact}
+            value={primaryParent?.contact2 || "N/A"}
             editable={isEditing}
-            onChange={(text) =>
-              setStudent((p) => ({ ...p, secondaryContact: text }))
-            }
+            onChange={(text) => {
+              if (!primaryParent) return;
+              setStudent((prev) => ({
+                ...prev,
+                parents: prev.parents.map((p) =>
+                  p.id === primaryParent.id ? { ...p, contact2: text } : p
+                ),
+              }));
+            }}
           />
           <InfoRow
-            label="occupation"
+            label="Occupation"
             icon="briefcase-outline"
-            value={student?.occupation}
+            value={primaryParent?.occupation || "N/A"}
             editable={isEditing}
-            onChange={(text) =>
-              setStudent((p) => ({ ...p, occupation: text }))
-            }
+            onChange={(text) => {
+              if (!primaryParent) return;
+              setStudent((prev) => ({
+                ...prev,
+                parents: prev.parents.map((p) =>
+                  p.id === primaryParent.id ? { ...p, occupation: text } : p
+                ),
+              }));
+            }}
           />
           <InfoRow
             label="Place of Work"
             icon="location-outline"
-            value={student?.placeOfWork}
+            value={primaryParent?.placeOfWork || "N/A"}
             editable={isEditing}
-            onChange={(text) =>
-              setStudent((p) => ({ ...p, placeOfWork: text }))
-            }
+            onChange={(text) => {
+              if (!primaryParent) return;
+              setStudent((prev) => ({
+                ...prev,
+                parents: prev.parents.map((p) =>
+                  p.id === primaryParent.id ? { ...p, placeOfWork: text } : p
+                ),
+              }));
+            }}
           />
           <InfoRow
             label="Relation"
             icon="people-outline"
-            value={student?.relation}
+            value={primaryParent?.parentType || "N/A"}
             editable={isEditing}
-            onChange={(text) =>
-              setStudent((p) => ({ ...p, relation: text }))
-            }
+            onChange={(text) => {
+              if (!primaryParent) return;
+              setStudent((prev) => ({
+                ...prev,
+                parents: prev.parents.map((p) =>
+                  p.id === primaryParent.id ? { ...p, parentType: text } : p
+                ),
+              }));
+            }}
           />
         </View>
       </View>
@@ -205,20 +220,28 @@ const Profile = ({ navigation, selectedStudent }) => {
       {/* ---- Ward Info ---- */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Wards' Information</Text>
+          <Text style={styles.sectionTitle}>Student Information</Text>
         </View>
         <View style={styles.infoCard}>
-          <InfoRow label="Grade" icon="school-outline" value={student?.grade} />
-          <InfoRow label="Course" icon="book-outline" value={student?.course} />
           <InfoRow
-            label="Semester"
-            icon="layers-outline"
-            value={student?.semester}
+            label="Class"
+            icon="school-outline"
+            value={student.studentClass || "N/A"}
           />
           <InfoRow
-            label="Department"
-            icon="business-outline"
-            value={student?.department}
+            label="Gender"
+            icon="person-outline"
+            value={student.gender || "N/A"}
+          />
+          <InfoRow
+            label="Nationality"
+            icon="earth-outline"
+            value={student.nationality || "N/A"}
+          />
+          <InfoRow
+            label="Admission Date"
+            icon="calendar-number-outline"
+            value={formatDate(student.dateOfAdmission)}
           />
         </View>
       </View>
@@ -226,7 +249,7 @@ const Profile = ({ navigation, selectedStudent }) => {
       {/* ---- Additional Info ---- */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Additional Information</Text>
+          <Text style={styles.sectionTitle}>Additional Information</Text>
         </View>
         <View style={styles.infoCard}>
           <InfoRow
@@ -234,9 +257,7 @@ const Profile = ({ navigation, selectedStudent }) => {
             icon="location-outline"
             value={student?.address}
             editable={isEditing}
-            onChange={(text) =>
-              setStudent((p) => ({ ...p, address: text }))
-            }
+            onChange={(text) => setStudent((p) => ({ ...p, address: text }))}
           />
           <InfoRow
             label="Emergency Contact"
@@ -335,8 +356,13 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 8,
   },
-  name: { fontSize: 24, fontWeight: "bold", color: "#333", 
-    textAlign: 'center', marginBottom: 5 },
+  name: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#333",
+    textAlign: "center",
+    marginBottom: 5,
+  },
   studentId: { fontSize: 16, color: "#666" },
 
   section: { padding: 20 },
