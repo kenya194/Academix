@@ -1,5 +1,12 @@
-import { useState, useEffect, useContext } from "react";
-import { Dimensions, StyleSheet, TouchableOpacity } from "react-native";
+import { useState, useEffect, useContext, useCallback  } from "react";
+import {
+  Dimensions,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  View,
+  Alert,
+} from "react-native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import Dashboard from "./dashboard";
 import Profile from "./profilePage";
@@ -12,21 +19,149 @@ import { Ionicons } from "@expo/vector-icons";
 import { AuthContext } from "../AuthContext";
 import { makePostCall } from "../apiService";
 import InactiveAccountScreen from "./InactiveAccountScreen";
+import {
+  getUsernameFromToken,
+  getGroups,
+  getUserIDFromToken,
+} from "../components/jwtUtils";
+import { navigationRef } from "../App";
+import axios from "axios";
 
 const Drawer = createDrawerNavigator();
 const { width } = Dimensions.get("window");
 
 const AppNavigator = () => {
-  const { isLoggedIn, onLogin, onLogout } = useContext(AuthContext);
+  const { isLoggedIn, onLogin, onLogout, token } = useContext(AuthContext);
+  const username = getUsernameFromToken(token);
+  const groups = getGroups(token);
+  const userId = getUserIDFromToken(token);
 
-  console.log("NOW IN THE APP NAVIGATOR FILE  -" + isLoggedIn);
+  console.log(
+    "NOW IN THE APP NAVIGATOR FILE with userName AND GROUP WITH USER ID{}\n" +
+      isLoggedIn +
+      " \n" +
+      username +
+      " \n" +
+      groups +
+      " \n" +
+      userId
+  );
+
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [navigationReady, setNavigationReady] = useState(false);
+
+  // Define killKeycloakSession function
+  const killKeycloakSession = async (userId, adminCredentials, realmConfig) => {
+    const { serverUrl, realm } = realmConfig;
+    const { username, password } = adminCredentials;
+
+    try {
+      // 1. Get admin access token
+      const tokenResponse = await axios.post(
+        `${serverUrl}/realms/master/protocol/openid-connect/token`,
+        new URLSearchParams({
+          client_id: "admin-cli",
+          username: username,
+          password: password,
+          grant_type: "password",
+        }),
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
+
+      const adminToken = tokenResponse.data.access_token;
+
+      // 2. Kill user session
+      await axios.post(
+        `${serverUrl}/admin/realms/${realm}/users/${userId}/logout`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${adminToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      return true;
+    } catch (error) {
+      console.error(
+        "Failed to kill session:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  };
+
+  // Memoized killSession function
+  const killSession = useCallback(async (userId) => {
+    try {
+      console.log("Attempting to kill Session for user:", userId);
+      const success = await killKeycloakSession(
+        userId,
+        {
+          username: "admin",
+          password: "IdowhatIlikeIlikewhatIdo!@3",
+        },
+        {
+          serverUrl: "https://keycloak.astromyllc.com",
+          realm: "ShootingStar",
+        }
+      );
+
+      if (success) {
+        console.log("Session terminated successfully");
+        return true;
+      }
+    } catch (error) {
+      console.error("Error terminating session:", error);
+      return false;
+    }
+  }, []);
+
+  // Memoized logout handler
+  const handleLogout = useCallback(async () => {
+    try {
+      await onLogout(); // Assuming onLogout is from your AuthContext
+      // Add any other cleanup you need
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  }, [onLogout]);
+
+  useEffect(() => {
+    const handleUnauthorizedAccess = async () => {
+      console.log("Checking unauthorized access");
+      if (groups && !groups.includes("parents") && userId) {
+        console.log("Unauthorized access detected for user:", userId);
+
+        const sessionKilled = await killSession(userId);
+
+        if (sessionKilled) {
+          setTimeout(() => {
+            Alert.alert("Access Denied", "You don't have parent permissions.", [
+              {
+                text: "OK",
+                onPress: handleLogout,
+              },
+            ]);
+          }, 100);
+        }
+      }
+    };
+
+    handleUnauthorizedAccess();
+  }, [groups, userId, killSession, handleLogout]);
 
   useEffect(() => {
     const postData = async () => {
       try {
-        const payload = { val: "0243551617" };
+        const payload = { val: username };
         const result = await makePostCall(
           "api/mobile/getSkimpStudentsByParentContact",
           payload
