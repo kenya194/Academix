@@ -1,4 +1,29 @@
-export default {
+const { withAndroidManifest } = require('@expo/config-plugins');
+
+// Define the plugin inline
+const withAppAuth = (config) => {
+  return withAndroidManifest(config, async (config) => {
+    const androidManifest = config.modResults;
+    
+    const application = androidManifest.manifest.application[0];
+    
+    // Add the appAuthRedirectScheme meta-data
+    if (!application['meta-data']) {
+      application['meta-data'] = [];
+    }
+    
+    application['meta-data'].push({
+      $: {
+        'android:name': 'appAuthRedirectScheme',
+        'android:value': 'com.astromyllc.academix'
+      }
+    });
+    
+    return config;
+  });
+};
+
+module.exports = {
   expo: {
     name: "Academix",
     slug: "Academix",
@@ -72,14 +97,15 @@ export default {
         }
       ],
       "expo-asset",
-      "expo-web-browser"
+      "expo-web-browser",
+      withAppAuth // Add the plugin here
     ],
     runtimeVersion: {
       policy: "sdkVersion"
     },
     extra: {
       eas: {
-       "projectId": "27f28cea-8c7d-4059-b312-150b61f7f1b6"//"cea4e93d-478b-4763-81a2-0b8fff378d62"
+        "projectId": "27f28cea-8c7d-4059-b312-150b61f7f1b6"
       }
     }
   }
