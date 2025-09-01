@@ -1,4 +1,4 @@
-const withAppAuth = require('./withAppAuth');
+const withAppAuth = require('./plugins/withAppAuth');
 
 module.exports = {
   expo: {
