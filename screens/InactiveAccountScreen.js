@@ -9,9 +9,10 @@ const InactiveAccountScreen = ({ route, navigation }) => {
   const { username } = useContext(AuthContext);
 
   // Find the parent whose contact matches the account username
+    console.log("STUDENT TO FIND PARENT {}" , student.parents);
   const getMatchingParent = () => {
     if (!student.parents || !username) return null;
-
+    console.log(student.parents);
     return student.parents.find(
       (parent) => parent.contact1 === username || parent.contact2 === username
     );
@@ -20,7 +21,8 @@ const InactiveAccountScreen = ({ route, navigation }) => {
   const handleReactivate = async () => {
     const matchingParent = getMatchingParent();
 
-  
+    console.log(matchingParent);
+
     console.log("Formarting Data");
     // Call API to send reactivation email
     const payload = {

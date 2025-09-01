@@ -15,11 +15,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { makePostCall, handleMenuAction } from "../apiService";
 import { LineChart, RadarChart, HeatmapChart } from "../charts";
 import theme from "../theme";
-
-// Add this debug line right after imports:
-console.log("Imported RadarChart:", RadarChart); // Should log a function
-
 import React, { useState, useEffect } from "react";
+
 const { width } = Dimensions.get("window");
 
 const Dashboard = ({ navigation, selectedStudent }) => {
@@ -30,11 +27,14 @@ const Dashboard = ({ navigation, selectedStudent }) => {
   const fadeAnim = useState(new Animated.Value(0))[0];
   const [activeChart, setActiveChart] = useState("trend");
 
+  const [resultsData, setResultsData] = useState(null);
+  const [resultsLoading, setResultsLoading] = useState(false);
+
   const trendImg = require("../assets/trendImg.png");
   const perfImg = require("../assets/performanceImg.png");
   const attendImg = require("../assets/attendImg.png");
 
-  //Sample data
+  // Sample data (fallback)
   const radarData = [
     { label: "Math", value: 85 },
     { label: "Science", value: 78 },
@@ -44,7 +44,6 @@ const Dashboard = ({ navigation, selectedStudent }) => {
     { label: "Sports", value: 30 },
   ];
 
-  //Sample linear Data
   const trendData = [
     { label: "Jan", value: 50 },
     { label: "Feb", value: 60 },
@@ -53,7 +52,6 @@ const Dashboard = ({ navigation, selectedStudent }) => {
     { label: "May", value: 45 },
   ];
 
-  //Sample linear Data
   const attendData = [
     { month: "Jan", week: 1, absences: 2 },
     { month: "Jan", week: 2, absences: 1 },
@@ -73,6 +71,87 @@ const Dashboard = ({ navigation, selectedStudent }) => {
     { month: "Apr", week: 4, absences: 0 },
   ];
 
+  const fetchStudentResults = async () => {
+    if (!selectedStudent?.studentId) {
+      setResultsData(null);
+      return;
+    }
+
+    setResultsLoading(true);
+    try {
+      const endpoint = "api/mobile/resultsData";
+      const payload = { val: selectedStudent.studentId };
+
+      const result = await makePostCall(endpoint, payload);
+
+      // Check if there's any nested data that might contain subject information
+      let subjectDataFound = null;
+
+      // Look for subject data in various possible locations
+      if (result?.studentReportResponseList?.[0]?.subjects) {
+        subjectDataFound = result.studentReportResponseList[0].subjects;
+      } else if (result?.subjects) {
+        subjectDataFound = result.subjects;
+      } else if (result?.studentReportResponseList?.[0]?.studentAssessment) {
+        subjectDataFound =
+          result.studentReportResponseList[0].studentAssessment;
+      } else if (result?.studentAssessment) {
+        subjectDataFound = result.studentAssessment;
+      }
+
+      if (
+        subjectDataFound &&
+        Array.isArray(subjectDataFound) &&
+        subjectDataFound.length > 0
+      ) {
+
+        const formattedData = subjectDataFound
+          .filter(
+            (item) =>
+              item && (item.subject || item.subjectName || item.courseName)
+          )
+          .map((item) => {
+            const subjectName =
+              item.subject || item.subjectName || item.courseName || "Subject";
+            const score =
+              item.score ||
+              item.mark ||
+              item.percentage ||
+              item.totalScore ||
+              item.average ||
+              0;
+
+            return {
+              label:
+                subjectName.length > 8
+                  ? subjectName.substring(0, 7) + "..."
+                  : subjectName,
+              value: Math.max(0, Math.min(100, Number(score))),
+            };
+          })
+          .slice(0, 8);
+
+        setResultsData(formattedData);
+      } else {
+        console.log("No subject-wise data found in the response");
+
+        // Fallback: Use the overall average as a single data point
+        if (result?.studentReportResponseList?.[0]?.averageScore) {
+          const averageScore =
+            parseFloat(result.studentReportResponseList[0].averageScore) || 0;
+          setResultsData([{ label: "Overall", value: averageScore }]);
+        } else {
+          setResultsData(null);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch results:", error);
+      setResultsData(null);
+    } finally {
+      setResultsLoading(false);
+    }
+  };
+
   const fetchStudentData = async () => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -80,8 +159,8 @@ const Dashboard = ({ navigation, selectedStudent }) => {
         name: selectedStudent.name,
         picture: selectedStudent.picture,
         studentId: selectedStudent.studentId,
-        course: "Computer Science",
-        semester: "3rd Semester",
+        studentClass: selectedStudent.studentClass,
+        institutionCode: selectedStudent.institutionCode,
       });
     } catch (error) {
       Alert.alert("Info", "Failed to load student data");
@@ -91,10 +170,17 @@ const Dashboard = ({ navigation, selectedStudent }) => {
     }
   };
 
+  const formatStudentClass = (studentClass) => {
+    if (!studentClass) return "Class";
+    let formatted = studentClass.replace(/^\d+\s*[-_]?\s*/, "");
+    formatted = formatted.replace(/\s*[-_]?\s*\d+$/, "");
+    return formatted.trim() || studentClass;
+  };
+
   useEffect(() => {
     if (selectedStudent) {
       fetchStudentData();
-      // Fetch or display data for selectedStudent.id
+      fetchStudentResults(); // ADD THIS LINE
     }
   }, [selectedStudent]);
 
@@ -111,20 +197,14 @@ const Dashboard = ({ navigation, selectedStudent }) => {
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     fetchStudentData();
-  }, []);
+    fetchStudentResults().finally(() => {
+      setRefreshing(false);
+    });
+  }, [selectedStudent?.studentId]); // FIXED DEPENDENCY
 
   const handleImageError = () => {
     setImageError(true);
   };
-
-  const modules = [
-    { screen: "Profile", icon: "person", label: "Profile" },
-    { screen: "Results", icon: "document-text", label: "Results" },
-    { screen: "Fees", icon: "wallet", label: "Fees" },
-    { screen: "Settings", icon: "settings", label: "Settings" },
-    { screen: "Notification", icon: "notifications", label: "Notifications" },
-    { screen: "About", icon: "information-circle", label: "About" },
-  ];
 
   const menuItems = [
     {
@@ -133,6 +213,7 @@ const Dashboard = ({ navigation, selectedStudent }) => {
       label: "Profile",
       screen: "Profile",
       color: "#4CAF50",
+      disabled: false,
     },
     {
       id: "results",
@@ -140,6 +221,7 @@ const Dashboard = ({ navigation, selectedStudent }) => {
       label: "Results",
       screen: "Results",
       color: "#2196F3",
+      disabled: false,
     },
     {
       id: "fees",
@@ -147,6 +229,7 @@ const Dashboard = ({ navigation, selectedStudent }) => {
       label: "Fees Status",
       screen: "Fees",
       color: "#FF9800",
+      disabled: true,
     },
     {
       id: "attendance",
@@ -154,6 +237,7 @@ const Dashboard = ({ navigation, selectedStudent }) => {
       label: "Attendance",
       screen: "Attendance",
       color: "#9C27B0",
+      disabled: false,
     },
     {
       id: "assignments",
@@ -161,6 +245,7 @@ const Dashboard = ({ navigation, selectedStudent }) => {
       label: "Assignments",
       screen: "Assignments",
       color: "#F44336",
+      disabled: true,
     },
     {
       id: "notifications",
@@ -168,6 +253,7 @@ const Dashboard = ({ navigation, selectedStudent }) => {
       label: "Notifications",
       screen: "Notifications",
       color: "#607D8B",
+      disabled: false,
     },
   ];
 
@@ -202,18 +288,23 @@ const Dashboard = ({ navigation, selectedStudent }) => {
               />
             ) : (
               <Image
-                source={{ uri: student?.picture }}
+                source={{ uri: selectedStudent?.picture }}
                 style={styles.profileImage}
                 onError={handleImageError}
               />
             )}
           </View>
-          <Text style={styles.name}>{student?.name || "Student Name"}</Text>
+          <Text style={styles.name}>
+            {selectedStudent?.name || "Student Name"}
+          </Text>
           <Text style={styles.studentId}>
-            {student?.studentId || "Student ID"}
+            {selectedStudent?.studentId || "Student ID"}
           </Text>
           <Text style={styles.courseInfo}>
-            {student?.course || "Course"} • {student?.semester || "Semester"}
+            {formatStudentClass(selectedStudent?.studentClass) || "Class"}
+          </Text>
+          <Text style={styles.courseInfo}>
+            {selectedStudent?.institutionCode || "Institution"}
           </Text>
         </View>
 
@@ -233,21 +324,22 @@ const Dashboard = ({ navigation, selectedStudent }) => {
                     },
                   ],
                   opacity: fadeAnim,
-                  animationDelay: index * 100,
                 },
               ]}
             >
               <TouchableOpacity
-                style={styles.menuItem}
+                style={[
+                  styles.menuItem,
+                  item.disabled && styles.disabledMenuItem,
+                ]}
                 onPress={() => {
+                  if (item.disabled) return;
                   const screenName = item.screen.toLowerCase();
                   const excludedScreens = ["profile", "notifications"];
 
-                  // Only call the API if NOT going to "Profile"
-                  if (!excludedScreens .includes(screenName)) {
+                  if (!excludedScreens.includes(screenName)) {
                     const endpoint = `api/mobile/${screenName}Data`;
-                    const payload = { val: student?.studentId };
-
+                    const payload = { val: selectedStudent?.studentId };
                     handleMenuAction({
                       endpoint,
                       payload,
@@ -255,25 +347,38 @@ const Dashboard = ({ navigation, selectedStudent }) => {
                       screen: item.screen,
                     });
                   } else {
-                    // Just navigate without API call
                     navigation.navigate(item.screen);
                   }
                 }}
-                activeOpacity={0.7}
+                activeOpacity={item.disabled ? 1 : 0.7}
+                disabled={item.disabled}
               >
                 <View
                   style={[
                     styles.iconContainer,
                     { backgroundColor: `${item.color}20` },
+                    item.disabled && styles.disabledIconContainer,
                   ]}
                 >
-                  <Ionicons name={item.icon} size={30} color={item.color} />
+                  <Ionicons
+                    name={item.icon}
+                    size={30}
+                    color={item.disabled ? "#999" : item.color}
+                  />
                 </View>
-                <Text style={styles.menuText}>{item.label}</Text>
+                <Text
+                  style={[
+                    styles.menuText,
+                    item.disabled && styles.disabledMenuText,
+                  ]}
+                >
+                  {item.label}
+                </Text>
               </TouchableOpacity>
             </Animated.View>
           ))}
         </View>
+
         <View style={styles.chatMain}>
           <View style={styles.chartNav}>
             <TouchableOpacity
@@ -282,55 +387,78 @@ const Dashboard = ({ navigation, selectedStudent }) => {
             >
               <Image
                 source={trendImg}
-                style={{ flex: 1, width: "100%", height: "100%" }}
+                style={styles.chartNavImage}
                 resizeMode="contain"
               />
             </TouchableOpacity>
-
             <TouchableOpacity
               style={styles.chartNavContent}
               onPress={() => setActiveChart("radar")}
             >
               <Image
                 source={perfImg}
-                style={{ flex: 1, width: "100%", height: "100%" }}
+                style={styles.chartNavImage}
                 resizeMode="contain"
               />
             </TouchableOpacity>
-
             <TouchableOpacity
               style={styles.chartNavContent}
               onPress={() => setActiveChart("heatmap")}
             >
               <Image
                 source={attendImg}
-                style={{ flex: 1, width: "100%", height: "100%" }}
+                style={styles.chartNavImage}
                 resizeMode="contain"
               />
             </TouchableOpacity>
           </View>
 
-          
           <View style={styles.chartArea}>
             {activeChart === "trend" && (
               <View style={styles.chartPlaceholder}>
                 <LineChart data={trendData} color="#2196F3" />
               </View>
             )}
+
             {activeChart === "radar" && (
-              <RadarChart
-                data={radarData}
-                containerWidth="100%"
-                containerHeight={220}
-              />
+              <View style={styles.chartPlaceholder}>
+                {resultsLoading ? (
+                  <View style={styles.resultsLoadingContainer}>
+                    <ActivityIndicator size="large" color="#4CAF50" />
+                    <Text style={styles.resultsLoadingText}>
+                      Loading results...
+                    </Text>
+                  </View>
+                ) : resultsData && resultsData.length > 0 ? (
+                  <RadarChart
+                    data={resultsData}
+                    containerWidth="100%"
+                    containerHeight={220}
+                  />
+                ) : (
+                  <View style={styles.noDataContainer}>
+                    <Ionicons name="school-outline" size={50} color="#ccc" />
+                    <Text style={styles.noDataText}>
+                      No results data available
+                    </Text>
+                    <TouchableOpacity
+                      onPress={fetchStudentResults}
+                      style={styles.retryButton}
+                    >
+                      <Text style={styles.retryText}>Retry</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
             )}
+
             {activeChart === "heatmap" && (
               <View style={styles.chartPlaceholder}>
                 <HeatmapChart
                   data={attendData}
                   colorRange={["#fff7ec", "#fee8c8", "#fdbb84", "#d7301f"]}
                   containerWidth={width * 0.69}
-                  fixedHeight={210} 
+                  fixedHeight={210}
                 />
               </View>
             )}
@@ -342,14 +470,8 @@ const Dashboard = ({ navigation, selectedStudent }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
-  content: {
-    flex: 1,
-    padding: 20,
-  },
+  container: { flex: 1, backgroundColor: "#f5f5f5" },
+  content: { flex: 1, padding: 20 },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
@@ -385,11 +507,58 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
+  profileImage: { width: "100%", height: "100%" },
+  name: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginTop: 10,
+    color: "#333",
+    textAlign: "center",
+  },
+  studentId: { fontSize: 16, color: "#666", marginTop: 5 },
+  courseInfo: { fontSize: 14, color: "#888", marginTop: 5 },
+
+  menu: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    paddingHorizontal: 5,
+  },
+  menuItemContainer: { width: (width - 70) / 3, marginBottom: 10 },
+  menuItem: {
+    alignItems: "center",
+    backgroundColor: "#fff",
+    padding: 15,
+    borderRadius: 12,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  disabledMenuItem: { opacity: 0.5, backgroundColor: "#f0f0f0" },
+  iconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  disabledIconContainer: { backgroundColor: "#f0f0f0" },
+  menuText: {
+    fontSize: 12,
+    color: "#333",
+    textAlign: "center",
+    fontWeight: "500",
+  },
+  disabledMenuText: { color: "#999" },
+
   chatMain: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center", // or "space-between" depending on layout
+    justifyContent: "center",
     backgroundColor: "#fff",
     borderRadius: 15,
     padding: 5,
@@ -426,8 +595,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    marginBottom: 10, // optional for spacing
+    marginBottom: 10,
   },
+  chartNavImage: { flex: 1, width: "100%", height: "100%" },
   chartArea: {
     width: "80%",
     flex: 1,
@@ -443,68 +613,38 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-chartPlaceholder: {
-  width: '100%',
-  height: '100%',
-  justifyContent: 'center',
-  alignItems: 'center',
-},
-  profileImage: {
+  chartPlaceholder: {
     width: "100%",
     height: "100%",
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginTop: 10,
-    color: "#333",
-    textAlign: "center",
-  },
-  studentId: {
-    fontSize: 16,
-    color: "#666",
-    marginTop: 5,
-  },
-  courseInfo: {
-    fontSize: 14,
-    color: "#888",
-    marginTop: 5,
-  },
-  menu: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    flexWrap: "wrap",
-    paddingHorizontal: 5,
-  },
-  menuItemContainer: {
-    width: (width - 70) / 3,
-    marginBottom: 10,
-  },
-  menuItem: {
-    alignItems: "center",
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  iconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 8,
   },
-  menuText: {
-    fontSize: 12,
-    color: "#333",
+
+  resultsLoadingContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  resultsLoadingText: { marginTop: 10, color: "#666" },
+  noDataContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  noDataText: {
     textAlign: "center",
-    fontWeight: "500",
+    color: "#666",
+    fontSize: 16,
+    marginTop: 10,
+    marginBottom: 15,
   },
+  retryButton: {
+    backgroundColor: "#4CAF50",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+  },
+  retryText: { color: "white", fontWeight: "bold" },
 });
 
 export default Dashboard;

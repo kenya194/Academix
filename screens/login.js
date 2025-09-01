@@ -32,8 +32,8 @@ const discovery = {
 const Login = ({ navigation }) => {
   const { onLogin } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
-  
-const logoImg = require("../assets/logo.png");
+
+  const logoImg = require("../assets/logo.png");
 
   const redirectUri = makeRedirectUri({
     native: "com.astromyllc.academix://oauthredirect",
@@ -123,8 +123,8 @@ const logoImg = require("../assets/logo.png");
 
   const handleLogin = () => {
     setLoading(true);
-    
-  Alert.alert("Redirect URI", redirectUri);
+
+    Alert.alert("Redirect URI", redirectUri);
     promptAsync().catch((error) => {
       console.error("Prompt Error:", error);
       setLoading(false);
@@ -140,7 +140,7 @@ const logoImg = require("../assets/logo.png");
         <View style={styles.content}>
           <View style={styles.header}>
             <Image
-              source={logoImg} 
+              source={logoImg}
               style={{ width: 100, height: 100, marginBottom: 10 }}
               resizeMode="contain"
             />
@@ -169,9 +169,7 @@ const logoImg = require("../assets/logo.png");
                   "Please contact your administrator"
                 )
               }
-            >
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-            </TouchableOpacity>
+            ></TouchableOpacity>
           </View>
         </View>
       </KeyboardAvoidingView>

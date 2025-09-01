@@ -70,7 +70,7 @@ export function PTR(sevicepath, params) {
   const promise = new Promise((resolve, reject) => {
     let response = fetch(url + sevicepath, params)
       .then((response) => response.text())
-      .then((result) => console.log(result))
+      .then((result) => console.log("RESULTS",result))
       .catch((error) => console.log("error", error));     
   });
   return promise;

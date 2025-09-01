@@ -2,7 +2,7 @@ export default {
   expo: {
     name: "Academix",
     slug: "Academix",
-    owner: "astromy-dev",
+    owner: "astromyllc",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
@@ -79,7 +79,7 @@ export default {
     },
     extra: {
       eas: {
-       "projectId": "cea4e93d-478b-4763-81a2-0b8fff378d62"
+       "projectId": "27f28cea-8c7d-4059-b312-150b61f7f1b6"//"cea4e93d-478b-4763-81a2-0b8fff378d62"
       }
     }
   }

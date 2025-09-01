@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useCallback  } from "react";
+import { useState, useEffect, useContext, useCallback } from "react";
 import {
   Dimensions,
   StyleSheet,
@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   View,
   Alert,
+  Text
 } from "react-native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import Dashboard from "./dashboard";
@@ -127,8 +128,7 @@ const AppNavigator = () => {
   // Memoized logout handler
   const handleLogout = useCallback(async () => {
     try {
-      await onLogout(); // Assuming onLogout is from your AuthContext
-      // Add any other cleanup you need
+      await onLogout();
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -161,6 +161,7 @@ const AppNavigator = () => {
   useEffect(() => {
     const postData = async () => {
       try {
+        setIsLoading(true);
         const payload = { val: username };
         const result = await makePostCall(
           "api/mobile/getSkimpStudentsByParentContact",
@@ -169,45 +170,80 @@ const AppNavigator = () => {
 
         console.log("Raw API result:", result);
 
-        const formatted = result.map((student, index) => ({
-          id: (index + 1).toString(), // Your sequential ID
-          studentId: student.studentId,
-          name: `${student.firstName} ${student.otherName || ""} ${
-            student.lastName
-          }`
-            .trim()
-            .replace(/\s+/g, " "),
-          dateOfAdmission: student.dateOfAdmission,
-          gender: student.gender,
-          nationality: student.nationality,
-          institutionCode: student.institutionCode,
-          studentClass: student.studentClass,
-          picture:
-            student.picture && student.picture.trim() !== ""
-              ? student.picture
-              : "https://example.com/default-picture.jpg",
-          status: "inactive", // student.status,
-          parents: student.parents
-            ? student.parents.map((parent) => ({
-                id: parent.id,
-                fullName: `${parent.firstNames} ${parent.lastName}`.trim(),
-                email: parent.email,
-                primaryContact: parent.contact1,
-                secondaryContact: parent.contact2 || null,
-                occupation: parent.occupation,
-                placeOfWork: parent.placeOfWork,
-                parentType: parent.parentType,
-                institutionCode: parent.institutionCode,
-              }))
-            : [],
-        }));
+        const formatted = result.map((student, index) => {
+          console.log("Processing student:", student?.studentAccount);
+
+          // Check if student has active account within the date range
+          const isActive = student?.studentAccount?.some((studAccount) => {
+            if (studAccount?.activationState?.toLowerCase?.() !== "active") {
+              return false;
+            }
+
+            const activationDate = studAccount?.activationDate
+              ? new Date(studAccount.activationDate)
+              : null;
+
+            if (!activationDate || isNaN(activationDate.getTime())) {
+              return false;
+            }
+
+            const currentYear = new Date().getFullYear();
+            const previousYear = currentYear - 1;
+
+            const startDate = new Date(previousYear, 8, 1);
+            const endDate = new Date(currentYear, 8, 30);
+
+            return activationDate >= startDate && activationDate <= endDate;
+          });
+
+          return {
+            id: (index + 1).toString(),
+            studentId: student.studentId || "unknown",
+            name: `${student.firstName || ""} ${student.otherName || ""} ${student.lastName || ""}`
+              .trim()
+              .replace(/\s+/g, " ") || "Unknown Student",
+            dateOfAdmission: student.dateOfAdmission || "",
+            gender: student.gender || "",
+            nationality: student.nationality || "",
+            institutionCode: student.institutionCode || "",
+            studentClass: student.studentClass || "",
+            picture:
+              student.picture && student.picture.trim() !== ""
+                ? student.picture
+                : "https://example.com/default-picture.jpg",
+            status: student.status || "inactive",
+            isActive: isActive || false,
+            parents: student.parents
+              ? student.parents.map((parent) => ({
+                  id: parent.id || "",
+                  fullName: `${parent.firstNames || ""} ${parent.lastName || ""}`.trim(),
+                  email: parent.email || "",
+                  primaryContact: parent.contact1 || "",
+                  secondaryContact: parent.contact2 || null,
+                  occupation: parent.occupation || "",
+                  placeOfWork: parent.placeOfWork || "",
+                  parentType: parent.parentType || "",
+                  institutionCode: parent.institutionCode || "",
+                }))
+              : [],
+            account: student.studentAccount
+              ? student.studentAccount.map((studAccount) => ({
+                  studentId: studAccount.studentId || "",
+                  activationState: studAccount.activationState || "",
+                  activationDate: studAccount.activationDate || "",
+                }))
+              : [],
+          };
+        });
 
         setStudents(formatted);
-        setSelectedStudent(formatted[0]);
+        setSelectedStudent(formatted[0] || null);
+        setIsLoading(false);
 
         console.log("Formatted result:", formatted);
       } catch (err) {
         console.error("Post call failed:", err);
+        setIsLoading(false);
       }
     };
 
@@ -252,8 +288,17 @@ const AppNavigator = () => {
     },
   ];
 
+  // Show loading screen while data is being fetched
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+        <Text>Loading student data...</Text>
+      </View>
+    );
+  }
+
   if (!isLoggedIn) {
-    console.log("Login component is:", Login);
     return (
       <Drawer.Navigator
         screenOptions={{ headerShown: false }}
@@ -265,6 +310,49 @@ const AppNavigator = () => {
       </Drawer.Navigator>
     );
   }
+
+  // Add null check for selectedStudent before rendering navigation
+  if (!selectedStudent) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>No student data available</Text>
+        <TouchableOpacity onPress={handleLogout} style={{ marginTop: 20, padding: 10, backgroundColor: '#4CAF50', borderRadius: 5 }}>
+          <Text style={{ color: 'white' }}>Logout</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const renderScreenContent = (ScreenComponent, props) => {
+    if (!selectedStudent) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#4CAF50" />
+          <Text>Loading student data...</Text>
+        </View>
+      );
+    }
+
+    if (!selectedStudent.isActive) {
+      console.log("STUDENT INACTIVE - Details:", {
+        studentId: selectedStudent.studentId,
+        studentName: selectedStudent.name,
+        isActive: selectedStudent.isActive,
+        status: selectedStudent.status,
+        hasStudentAccount: selectedStudent.account?.length > 0,
+        activationState: selectedStudent.account?.[0]?.activationState,
+        activationDate: selectedStudent.account?.[0]?.activationDate,
+      });
+      return (
+        <InactiveAccountScreen
+          {...props}
+          route={{ params: { student: selectedStudent } }}
+        />
+      );
+    }
+    
+    return <ScreenComponent {...props} selectedStudent={selectedStudent} />;
+  };
 
   return (
     <Drawer.Navigator
@@ -313,18 +401,7 @@ const AppNavigator = () => {
           ),
         })}
       >
-        {(props) => {
-          // Redirect to InactiveAccountScreen if student is inactive
-          if (selectedStudent?.status === "inactive") {
-            return (
-              <InactiveAccountScreen
-                {...props}
-                route={{ params: { student: selectedStudent } }}
-              />
-            );
-          }
-          return <Dashboard {...props} selectedStudent={selectedStudent} />;
-        }}
+        {(props) => renderScreenContent(Dashboard, props)}
       </Drawer.Screen>
 
       <Drawer.Screen
@@ -340,17 +417,7 @@ const AppNavigator = () => {
           ),
         })}
       >
-        {(props) => {
-          if (selectedStudent?.status === "inactive") {
-            return (
-              <InactiveAccountScreen
-                {...props}
-                route={{ params: { student: selectedStudent } }}
-              />
-            );
-          }
-          return <Profile {...props} selectedStudent={selectedStudent} />;
-        }}
+        {(props) => renderScreenContent(Profile, props)}
       </Drawer.Screen>
 
       <Drawer.Screen
@@ -366,17 +433,7 @@ const AppNavigator = () => {
           ),
         })}
       >
-        {(props) => {
-          if (selectedStudent?.status === "inactive") {
-            return (
-              <InactiveAccountScreen
-                {...props}
-                route={{ params: { student: selectedStudent } }}
-              />
-            );
-          }
-          return <Results {...props} selectedStudent={selectedStudent} />;
-        }}
+        {(props) => renderScreenContent(Results, props)}
       </Drawer.Screen>
 
       <Drawer.Screen
@@ -392,17 +449,7 @@ const AppNavigator = () => {
           ),
         })}
       >
-        {(props) => {
-          if (selectedStudent?.status === "inactive") {
-            return (
-              <InactiveAccountScreen
-                {...props}
-                route={{ params: { student: selectedStudent } }}
-              />
-            );
-          }
-          return <Fees {...props} selectedStudent={selectedStudent} />;
-        }}
+        {(props) => renderScreenContent(Fees, props)}
       </Drawer.Screen>
 
       <Drawer.Screen
@@ -418,19 +465,7 @@ const AppNavigator = () => {
           ),
         })}
       >
-        {(props) => {
-          if (selectedStudent?.status === "inactive") {
-            return (
-              <InactiveAccountScreen
-                {...props}
-                route={{ params: { student: selectedStudent } }}
-              />
-            );
-          }
-          return (
-            <NotificationPage {...props} selectedStudent={selectedStudent} />
-          );
-        }}
+        {(props) => renderScreenContent(NotificationPage, props)}
       </Drawer.Screen>
     </Drawer.Navigator>
   );
