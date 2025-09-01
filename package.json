@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "EXPO_DEBUG=true expo start --clear",
-    "android": "EXPO_DEBUG=true expo start --android --clear",
-    "ios": "EXPO_DEBUG=true expo start --ios --clear",
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "postinstall": "patch-package"
   },
@@ -37,7 +37,7 @@
     "metro-resolver": "0.82.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "react-native": "0.79.5",
+    "react-native": "0.79.6",
     "react-native-app-auth": "^6.4.0",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-logs": "^5.3.0",
