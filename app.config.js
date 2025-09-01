@@ -1,27 +1,4 @@
-const { withAndroidManifest } = require('@expo/config-plugins');
-
-// Define the plugin inline
-const withAppAuth = (config) => {
-  return withAndroidManifest(config, async (config) => {
-    const androidManifest = config.modResults;
-    
-    const application = androidManifest.manifest.application[0];
-    
-    // Add the appAuthRedirectScheme meta-data
-    if (!application['meta-data']) {
-      application['meta-data'] = [];
-    }
-    
-    application['meta-data'].push({
-      $: {
-        'android:name': 'appAuthRedirectScheme',
-        'android:value': 'com.astromyllc.academix'
-      }
-    });
-    
-    return config;
-  });
-};
+const withAppAuth = require('./withAppAuth');
 
 module.exports = {
   expo: {
@@ -42,16 +19,16 @@ module.exports = {
     assetBundlePatterns: ["**/*"],
     platforms: ["ios", "android", "web"],
     ios: {
-      "supportsTablet": true,
-      "jsEngine": "hermes",
-      "bundleIdentifier": "com.astromyllc.academix",
-      "infoPlist": {
-        "CFBundleURLTypes": [
+      supportsTablet: true,
+      jsEngine: "hermes",
+      bundleIdentifier: "com.astromyllc.academix",
+      infoPlist: {
+        CFBundleURLTypes: [
           {
-            "CFBundleURLSchemes": ["com.astromyllc.academix"]
+            CFBundleURLSchemes: ["com.astromyllc.academix"]
           }
         ],
-        "ITSAppUsesNonExemptEncryption": false
+        ITSAppUsesNonExemptEncryption: false
       }
     },
     android: {
@@ -70,9 +47,6 @@ module.exports = {
           required: false
         }
       ],
-      manifestPlaceholders: {
-        appAuthRedirectScheme: "com.astromyllc.academix"
-      },
       intentFilters: [
         {
           action: "VIEW",
@@ -98,14 +72,14 @@ module.exports = {
       ],
       "expo-asset",
       "expo-web-browser",
-      withAppAuth // Add the plugin here
+      withAppAuth 
     ],
     runtimeVersion: {
       policy: "sdkVersion"
     },
     extra: {
       eas: {
-        "projectId": "27f28cea-8c7d-4059-b312-150b61f7f1b6"
+        projectId: "27f28cea-8c7d-4059-b312-150b61f7f1b6"
       }
     }
   }
