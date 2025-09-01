@@ -33,6 +33,7 @@ module.exports = {
     },
     android: {
       package: "com.astromyllc.academix",
+      versionCode: 2,
       permissions: [
         "android.permission.INTERNET",
         "android.permission.CAMERA",
