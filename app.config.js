@@ -22,13 +22,26 @@ module.exports = {
       supportsTablet: true,
       jsEngine: "hermes",
       bundleIdentifier: "com.astromyllc.academix",
+      buildNumber: "1.0.1", 
       infoPlist: {
+        // PURPOSE STRINGS (REQUIRED for permissions)
+        NSCameraUsageDescription: "This app uses the camera to capture pictures to replace the user profile picture of users.",
+        NSPhotoLibraryUsageDescription: "This app needs access to your photo library so you can choose a profile picture or upload media.",
+
+        // DEEP LINKING (Equivalent to Android's intentFilters)
         CFBundleURLTypes: [
           {
-            CFBundleURLSchemes: ["com.astromyllc.academix"]
+            CFBundleURLSchemes: ["com.astromyllc.academix"] // Your custom scheme
+            // Note: For deep linking, you usually use a reverse domain OR a simple name.
+            // Using your full bundle ID as a scheme is unusual but technically possible.
+            // You might want to change this to just "academix" for simplicity.
           }
         ],
-        ITSAppUsesNonExemptEncryption: false
+        LSApplicationQueriesSchemes: ["https"], // Often needed if you link to websites
+
+        // OTHER COMMON SETTINGS
+        ITSAppUsesNonExemptEncryption: false, // Required if you use any encryption
+        UIBackgroundModes: [] // You likely don't need this unless you play audio in the background, etc.
       }
     },
     android: {
