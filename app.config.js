@@ -4,7 +4,7 @@ module.exports = {
   expo: {
     name: "Academix",
     slug: "Academix",
-    owner: "astromyllc",
+    owner: "astromy_admin",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
@@ -22,7 +22,7 @@ module.exports = {
       supportsTablet: true,
       jsEngine: "hermes",
       bundleIdentifier: "com.astromyllc.academix",
-      buildNumber: "1.0.1", 
+      buildNumber: "1.0.2", 
       infoPlist: {
         // PURPOSE STRINGS (REQUIRED for permissions)
         NSCameraUsageDescription: "This app uses the camera to capture pictures to replace the user profile picture of users.",

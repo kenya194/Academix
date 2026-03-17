@@ -52,13 +52,9 @@ const Profile = ({ navigation, selectedStudent }) => {
     if (isEditing) {
       // save
       try {
-        const res = await fetch(
-          "https://your-api-url.com/update-student", // <-- replace
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(student),
-          }
+        const res = await makePostCall(
+          "api/mobile/getSkimpStudentsByParentContact",
+            JSON.stringify(student),
         );
         if (!res.ok) throw new Error("Save failed");
         Alert.alert("Success", "Profile updated successfully!");
